@@ -8,5 +8,7 @@ namespace CorreWithCare;
 
 public class CorreWithCareSaveData : EverestModuleSaveData
 {
-
+    public HashSet<string> flags;
+    public Dictionary<string, int> counters;
+    public Dictionary<string, float> sliders;
 }

@@ -8,5 +8,13 @@ namespace CorreWithCare.Core;
 
 public static class Processor
 {
+    public static void Load()
+    {
+        
+    }
 
+    public static void Unload()
+    {
+
+    }
 }
