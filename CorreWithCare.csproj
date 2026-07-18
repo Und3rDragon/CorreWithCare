@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="CelesteMod.props" />
+
+    <PropertyGroup>
+        <RootNamespace>$(AssemblyName)</RootNamespace>
+        <LangVersion>preview</LangVersion>
+        <Version>1.0.0</Version>
+        <TargetFramework>net8.0</TargetFramework>
+
+        <CelesteRootPath>E:/Steam Games/steamapps/common/Celeste</CelesteRootPath>
+
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+        <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+        <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="ModFolder\Loenn\triggers\debugging\**" />
+      <EmbeddedResource Remove="ModFolder\Loenn\triggers\debugging\**" />
+      <None Remove="ModFolder\Loenn\triggers\debugging\**" />
+    </ItemGroup>
+
+	<!--
+	<ItemGroup>
+		<CelesteModReference Include="CommunalHelper" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<CelesteModReference Include="VivHelper" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<CelesteModReference Include="MaxHelpingHand" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<CelesteModReference Include="KoseiHelper" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<CelesteModReference Include="XaphanHelper" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<CelesteModReference Include="MoreDasheline" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<CelesteModReference Include="LakeSideCode" />
+	</ItemGroup>
+	
+	-->
+
+    <!--Implement dependencies here in an ItemGroup-->
+
+
+    <Import Project="CelesteMod.targets" />
+</Project>
