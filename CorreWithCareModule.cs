@@ -1,5 +1,7 @@
 using Celeste.Mod.Helpers;
+using CorreWithCare.Core;
 using CorreWithCare.Utils;
+using IL.MonoMod;
 
 namespace CorreWithCare;
 
@@ -52,9 +54,12 @@ public class CorreWithCareModule : EverestModule
     {
         Print.Info("Corre is standing by");
         Instance = this;
+
+        LoadingManager.Load();
     }
 
     public override void Unload()
     {
+        LoadingManager.Unload();
     }
 }
