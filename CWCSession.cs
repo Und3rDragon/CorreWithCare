@@ -6,24 +6,24 @@ using System.Threading.Tasks;
 
 namespace CorreWithCare;
 
-public class CorreWithCareSession : EverestModuleSession
+public class CWCSession : EverestModuleSession
 {
-    public HashSet<string> flagsPerRoom;
-    public HashSet<string> flagsPerDeath;
+    public HashSet<string> flagsPerRoom = new();
+    public HashSet<string> flagsPerDeath = new();
     /// <summary>
     /// Counters and its reset value
     /// </summary>
-    public Dictionary<string, int> countersPerRoom;
+    public Dictionary<string, int> countersPerRoom = new();
     /// <summary>
     /// Counters and its reset value
     /// </summary>
-    public Dictionary<string, int> countersPerDeath;
+    public Dictionary<string, int> countersPerDeath = new();
     /// <summary>
     /// Sliders and its reset value
     /// </summary>
-    public Dictionary<string, float> slidersPerRoom;
+    public Dictionary<string, float> slidersPerRoom = new();
     /// <summary>
     /// Sliders and its reset value
     /// </summary>
-    public Dictionary<string, float> slidersPerDeath;
+    public Dictionary<string, float> slidersPerDeath = new();
 }

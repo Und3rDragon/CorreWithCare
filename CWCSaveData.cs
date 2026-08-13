@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CorreWithCare;
 
-public class CorreWithCareSaveData : EverestModuleSaveData
+public class CWCSaveData : EverestModuleSaveData
 {
     public HashSet<string> flags;
     public Dictionary<string, int> counters;

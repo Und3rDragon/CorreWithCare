@@ -91,65 +91,65 @@ public class CorreSystem
 
     public static void ResetPerRoom(Level self)
     {
-        foreach (var item in Access.Session.flagsPerRoom)
+        foreach (var item in CWCModule.Session.flagsPerRoom)
         {
             self.Session.SetFlag(item, false);
         }
 
-        Access.Session.flagsPerRoom.Clear();
+        CWCModule.Session.flagsPerRoom.Clear();
 
-        foreach (var item in Access.Session.countersPerRoom)
+        foreach (var item in CWCModule.Session.countersPerRoom)
         {
             self.Session.SetCounter(item.Key, item.Value);
         }
 
-        Access.Session.countersPerRoom.Clear();
+        CWCModule.Session.countersPerRoom.Clear();
 
-        foreach (var item in Access.Session.slidersPerRoom)
+        foreach (var item in CWCModule.Session.slidersPerRoom)
         {
             self.Session.SetSlider(item.Key, item.Value);
         }
 
-        Access.Session.slidersPerRoom.Clear();
+        CWCModule.Session.slidersPerRoom.Clear();
     }
 
     public static void ResetPerDeath(Level self)
     {
-        foreach (var item in Access.Session.flagsPerDeath)
+        foreach (var item in CWCModule.Session.flagsPerDeath)
         {
             self.Session.SetFlag(item, false);
         }
 
-        Access.Session.flagsPerDeath.Clear();
+        CWCModule.Session.flagsPerDeath.Clear();
 
-        foreach (var item in Access.Session.countersPerDeath)
+        foreach (var item in CWCModule.Session.countersPerDeath)
         {
             self.Session.SetCounter(item.Key, item.Value);
         }
 
-        Access.Session.countersPerDeath.Clear();
+        CWCModule.Session.countersPerDeath.Clear();
 
-        foreach (var item in Access.Session.slidersPerDeath)
+        foreach (var item in CWCModule.Session.slidersPerDeath)
         {
             self.Session.SetSlider(item.Key, item.Value);
         }
 
-        Access.Session.slidersPerDeath.Clear();
+        CWCModule.Session.slidersPerDeath.Clear();
     }
 
     public static void ApplyGlobals(Level self)
     {
-        foreach (var item in Access.SaveData.flags)
+        foreach (var item in CWCModule.SaveData.flags)
         {
             self.Session.SetFlag(item, true);
         }
 
-        foreach (var item in Access.SaveData.counters)
+        foreach (var item in CWCModule.SaveData.counters)
         {
             self.Session.SetCounter(item.Key, item.Value);
         }
 
-        foreach (var item in Access.SaveData.sliders)
+        foreach (var item in CWCModule.SaveData.sliders)
         {
             self.Session.SetSlider(item.Key, item.Value);
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CorreWithCare;
 
-public class CorreWithCareSettings : EverestModuleSettings
+public class CWCSettings : EverestModuleSettings
 {
 
 }
