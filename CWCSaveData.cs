@@ -8,7 +8,7 @@ namespace CorreWithCare;
 
 public class CWCSaveData : EverestModuleSaveData
 {
-    public HashSet<string> flags;
-    public Dictionary<string, int> counters;
-    public Dictionary<string, float> sliders;
+    public HashSet<string> flags = new();
+    public Dictionary<string, int> counters = new();
+    public Dictionary<string, float> sliders = new();
 }
