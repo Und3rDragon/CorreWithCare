@@ -14,36 +14,29 @@ local aseEnt = {
 }
 
 aseEnt.placements = {
-    name = "Arbitrary Color Fill",
+    name = "outline",
     data = {
-        color = "FFFFFF",
+        color = "FFFFFFFF",
+        outlineColor = "FFFFFFFF",
+        outlineWidth = 2,
         depth = 0,
-        effect = "",
-        markerEffectPixels = 0.4,
-        markerInterval = 0.6,
-        windingOrder = "Auto"
     }
 }
 
 aseEnt.fieldInformation = {
     color = {
-        fieldType = "color"
+        fieldType = "color",
+        useAlpha = true,
     },
-    effect = {
-        fieldType = "string",
-        options = {
-            "",
-            "Marker"
-        }
+    outlineColor = {
+        fieldType = "color",
+        useAlpha = true,
     },
-    windingOrder = {
-        fieldType = "string",
-        options = {
-            "Auto",
-            "Clockwise",
-            "Counter Clockwise"
-        }
-    }
+    outlineWidth = {
+        fieldType = "number",
+        allowEmpty = false,
+        minimumValue = 0,
+    },
 }
 
 function drawFilledPolygon(pt, fillColor)
@@ -96,6 +89,13 @@ function aseEnt.sprite(room, entity)
 
     if #entity.nodes>=1 then
         table.insert(sprites, dL.fromPoints(points, lineColor, 0.5))
+    end
+
+    -- outlineColor 描边预览：沿闭合轮廓画线
+    if entity.outlineColor and entity.outlineColor ~= "" then
+        local osuccess, or_, og, ob = utils.parseHexColor(entity.outlineColor)
+        local outlineLineColor = {or_, og, ob, 1}
+        table.insert(sprites, dL.fromPoints(points, outlineLineColor, entity.outlineWidth or 2))
     end
 
     for _,v in ipairs(nodeSprites) do

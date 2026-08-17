@@ -1,7 +1,10 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using CorreWithCare.Core;
+using CorreWithCare.Utils;
 using Microsoft.Xna.Framework.Graphics;
+using static CorreWithCare.Utils.ColorUtils;
 
 namespace CorreWithCare.Entities;
 
@@ -9,30 +12,23 @@ namespace CorreWithCare.Entities;
 [Tracked]
 public class ArbitraryOutline : BaseEntity
 {
-    public Color color;
-    public Vector2[] nodes;
+    public CorreColor color;
+    public CorreColor outlineColor;
+    public float outlineWidth;
     public VertexPositionColor[] objectVertices;
     public List<Vector3> verticesRelative;
 
     private int _vertexLength;
-    private string _effect;
-    private float _markerMovement;
-    private float _markerInterval;
-    private float _leftmostX;
-
-    internal string windingOrderString;
 
     public ArbitraryOutline(EntityData data, Vector2 offset) : base(data, offset)
     {
-        windingOrderString = data.Attr("windingOrder", "Auto");
-        _effect = data.Attr("effect");
-        _markerMovement = data.Float("markerEffectPixels");
-        _markerInterval = data.Float("markerInterval");
-        nodes = data.NodesOffset(offset);
-        color = data.HexColor("color", Color.White);
+        Nodes = data.NodesOffset(offset);
+        color = data.GetCorreColor("color", Color.White);
+        outlineColor = data.GetCorreColor("outlineColor", Color.White);
+        outlineWidth = data.Float("outlineWidth", 2f);
         Depth = data.Int("depth");
 
-        objectVertices = GetFillVertsFromNodes(this, Vector2.Zero, color, _effect == "Marker" ? _markerMovement : 0f);
+        objectVertices = GetFillVertsFromNodes(this, Vector2.Zero, color.Parsed());
         verticesRelative = new List<Vector3>();
         _vertexLength = objectVertices.Length;
 
@@ -41,29 +37,6 @@ public class ArbitraryOutline : BaseEntity
             ref var vert = ref objectVertices[i];
             verticesRelative.Insert(i, new Vector3(vert.Position.X - X, vert.Position.Y - Y, vert.Position.Z));
         }
-    }
-
-    public override void Added(Scene scene)
-    {
-        base.Added(scene);
-        if (_effect == "Marker")
-            Add(new Coroutine(MarkerRoutine()));
-    }
-
-    public IEnumerator MarkerRoutine()
-    {
-        objectVertices = GetFillVertsFromNodes(this, Vector2.Zero, color, _effect == "Marker" ? _markerMovement : 0f);
-        verticesRelative = new List<Vector3>();
-        _vertexLength = objectVertices.Length;
-
-        for (int i = 0; i < _vertexLength; i++)
-        {
-            var vert = objectVertices[i];
-            verticesRelative.Insert(i, new Vector3(vert.Position.X - X, vert.Position.Y - Y, 0f));
-        }
-
-        yield return _markerInterval;
-        Add(new Coroutine(MarkerRoutine()));
     }
 
     public override void Render()
@@ -81,25 +54,31 @@ public class ArbitraryOutline : BaseEntity
 
         GFX.DrawVertices(camera.Matrix, objectVertices, _vertexLength, null, null);
         GameplayRenderer.Begin();
+
+        // 多边形描边：沿 Position + Nodes 闭合轮廓绘制
+        if (outlineColor.alpha > 0f && outlineWidth > 0f && Nodes.Length >= 2)
+        {
+            Color oc = outlineColor.Parsed();
+            for (int i = 0; i < Nodes.Length; i++)
+            {
+                Vector2 from = (i == 0) ? Position : Nodes[i - 1];
+                Vector2 to = Nodes[i];
+                Draw.Line(from, to, oc, outlineWidth);
+            }
+            // 最后一段闭合回起点
+            Draw.Line(Nodes[Nodes.Length - 1], Position, oc, outlineWidth);
+        }
     }
 
-    public static Vector2 RandScaleModifier(float threshold)
+    public static VertexPositionColor[] GetFillVertsFromNodes(ArbitraryOutline entity, Vector2 offset, Color color)
     {
-        return new Vector2(
-            -threshold + Calc.Random.NextFloat(threshold * 2),
-            -threshold + Calc.Random.NextFloat(threshold * 2)
-        );
-    }
-
-    public static VertexPositionColor[] GetFillVertsFromNodes(ArbitraryOutline entity, Vector2 offset, Color color, float randScale)
-    {
-        var nodes = entity.nodes;
+        var nodes = entity.Nodes;
         var input = new Vector2[nodes.Length + 1];
 
-        input[0] = entity.Position + offset + RandScaleModifier(randScale);
+        input[0] = entity.Position + offset;
         for (int i = 1; i < input.Length; i++)
         {
-            input[i] = nodes[i - 1] + RandScaleModifier(randScale);
+            input[i] = nodes[i - 1];
         }
 
         // using "earcut" library for triangulations

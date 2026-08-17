@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.Entities;
 using CorreWithCare.Core;
+using static CorreWithCare.Utils.ColorUtils;
 
 namespace CorreWithCare.Entities;
 
@@ -28,11 +29,11 @@ public class CustomCredits : BaseEntity
     private bool _allowInput;
     
     // 颜色
-    private Color _headingColor;
-    private Color _subtitleColor;
-    private Color _textColor;
-    private Color _outlineColor;
-    private Color _edgeColor;
+    private CorreColor _headingColor;
+    private CorreColor _subtitleColor;
+    private CorreColor _textColor;
+    private CorreColor _outlineColor;
+    private CorreColor _edgeColor;
     
     // 字体缩放
     private float _headingScale;
@@ -190,11 +191,11 @@ public class CustomCredits : BaseEntity
         _allowInput = data.Bool("allowInput", true);
         
         // 颜色
-        _headingColor = data.HexColor("headingColor", Color.White);
-        _subtitleColor = data.HexColor("subtitleColor", Color.Gray);
-        _textColor = data.HexColor("textColor", Color.White);
-        _outlineColor = data.HexColor("outlineColor", Color.Black);
-        _edgeColor = data.HexColor("edgeColor", Color.DarkSlateBlue);
+        _headingColor = data.GetCorreColor("headingColor", Color.White);
+        _subtitleColor = data.GetCorreColor("subtitleColor", Color.Gray);
+        _textColor = data.GetCorreColor("textColor", Color.White);
+        _outlineColor = data.GetCorreColor("outlineColor", Color.Black);
+        _edgeColor = data.GetCorreColor("edgeColor", Color.DarkSlateBlue);
         
         // 字体缩放
         _headingScale = data.Float("headingScale", 2.5f);
@@ -244,8 +245,8 @@ public class CustomCredits : BaseEntity
         }
         
         // 默认内容
-        _nodes.Add(new HeadingNode { Text = "Credits", Color = _headingColor, Scale = _headingScale });
-        _nodes.Add(new TextNode { Text = "Define 'dialogKey' or 'inlineText' in EntityData.", Color = _textColor, Scale = _textScale });
+        _nodes.Add(new HeadingNode { Text = "Credits", Color = _headingColor.Parsed(), Scale = _headingScale });
+        _nodes.Add(new TextNode { Text = "Define 'dialogKey' or 'inlineText' in EntityData.", Color = _textColor.Parsed(), Scale = _textScale });
     }
     
     private void ParseTextToNodes(string text)
@@ -260,12 +261,12 @@ public class CustomCredits : BaseEntity
             if (line.StartsWith("h1:") || line.StartsWith("h1："))
             {
                 var content = line.Substring(line.IndexOf(':') + 1).Trim();
-                _nodes.Add(new HeadingNode { Text = content, Color = _headingColor, Scale = _headingScale });
+                _nodes.Add(new HeadingNode { Text = content, Color = _headingColor.Parsed(), Scale = _headingScale });
             }
             else if (line.StartsWith("h2:") || line.StartsWith("h2："))
             {
                 var content = line.Substring(line.IndexOf(':') + 1).Trim();
-                _nodes.Add(new SubtitleNode { Text = content, Color = _subtitleColor, Scale = _subtitleScale });
+                _nodes.Add(new SubtitleNode { Text = content, Color = _subtitleColor.Parsed(), Scale = _subtitleScale });
             }
             else if (line.StartsWith("img:") || line.StartsWith("img："))
             {
@@ -286,7 +287,7 @@ public class CustomCredits : BaseEntity
             }
             else
             {
-                _nodes.Add(new TextNode { Text = line, Color = _textColor, Scale = _textScale });
+                _nodes.Add(new TextNode { Text = line, Color = _textColor.Parsed(), Scale = _textScale });
             }
         }
     }
