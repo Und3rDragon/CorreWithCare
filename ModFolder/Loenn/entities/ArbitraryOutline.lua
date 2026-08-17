@@ -139,12 +139,12 @@ end
 function aseEnt.nodeSprite() end
 
 function aseEnt.selection(room, entity)
-    local main = utils.rectangle(entity.x, entity.y, 1, 1)
+    local main = utils.rectangle(entity.x - 4, entity.y - 4, 8, 8)
 
     if entity.nodes then
         local nodeSelections = {}
         for _,node in ipairs(entity.nodes) do
-            table.insert(nodeSelections, utils.rectangle(node.x, node.y, 1, 1))
+            table.insert(nodeSelections, utils.rectangle(node.x - 4, node.y - 4, 8, 8))
         end
         return main, nodeSelections
     end
@@ -158,7 +158,7 @@ function aseEnt.nodeAdded(room, entity, node)
 
     local nodes = entity.nodes
 
-    if node==0 then
+    if node == 0 then
         table.insert(nodes, 1, {x = nodeX, y = nodeY})
     else
         table.insert(nodes, node + 1, {x = nodeX, y = nodeY})
