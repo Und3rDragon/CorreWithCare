@@ -26,6 +26,7 @@ controller.placements = {
         textScale = 1.4,
         dialogKey = "",
         inlineText = "",
+        depth = -2000000,
     }
 }
 
@@ -55,6 +56,7 @@ controller.fieldInformation =
         fieldType = "color",
         useAlpha = true,
     },
+    depth = require("mods").requireFromPlugin("utils.setups").depths
 }
 
 function controller.sprite(room, entity)

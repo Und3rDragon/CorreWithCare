@@ -216,7 +216,7 @@ public class CustomCredits : BaseEntity
         _scrollSpeed = _totalHeight / _scrollTime;
         
         // 深度和标签
-        Depth = -2000000;
+        Depth = data.Int("depth", -2000000);
         Tag = TagsExt.SubHUD;
     }
     
