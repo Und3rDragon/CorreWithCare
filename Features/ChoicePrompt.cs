@@ -6,17 +6,18 @@ namespace CorreWithCare.Features;
 
 [Tracked]
 public class ChoicePrompt : BaseEntity {
-    internal static void Load() {
+    [ExtendedAttributes.Note("Handled by DialogChoice")]
+    public static void Load() {
         On.Celeste.Level.SkipCutscene += ClearOptionsOnSkip;
     }
-
-    internal static void Unload() {
+    [ExtendedAttributes.Note("Handled by DialogChoice")]
+    public static void Unload() {
         On.Celeste.Level.SkipCutscene -= ClearOptionsOnSkip;
     }
     
     private static void ClearOptionsOnSkip(On.Celeste.Level.orig_SkipCutscene orig, Level self) {
         orig(self);
-        var toRemove = new List<Entity>(Engine.Scene.Tracker.GetEntities<ChoicePrompt>());
+        var toRemove = Engine.Scene.Tracker.GetEntities<ChoicePrompt>();
         foreach (var e in toRemove) {
             e.RemoveSelf();
         }
