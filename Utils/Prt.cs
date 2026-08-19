@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace CorreWithCare.Utils;
 
-public static class Print
+public static class Prt
 {
     public static void In(ConsoleColor color = ConsoleColor.White, 
         LogLevel level = LogLevel.Info, 
         Func<object, string> objectParser = null, params object[] objs)
     {
         Console.ForegroundColor = color;
-
+        
         if(objectParser == null)
         {
             objectParser = obj => obj == null ? "null" : obj.ToString();
@@ -21,7 +21,7 @@ public static class Print
 
         foreach (object obj in objs)
         {
-            Logger.Log(level, CorreWithCareModule.Name, objectParser(obj));
+            Logger.Log(level, CWCModule.Name, objectParser(obj));
         }
 
         Console.ResetColor();

@@ -1,26 +1,27 @@
 using Celeste.Mod.Helpers;
+using CorreWithCare.Core;
 using CorreWithCare.Utils;
 
 namespace CorreWithCare;
 
-public class CorreWithCareModule : EverestModule
+public class CWCModule : EverestModule
 {
     public const string Name = "CorreWithCare";
 
-    public static CorreWithCareModule Instance;
-    public override Type SettingsType => typeof(CorreWithCareSettings);
-    public static CorreWithCareSettings Settings => (CorreWithCareSettings)Instance._Settings;
-    public override Type SessionType => typeof(CorreWithCareSession);
-    public static CorreWithCareSession Session => (CorreWithCareSession)Instance._Session;
-    public override Type SaveDataType => typeof(CorreWithCareSaveData);
-    public static CorreWithCareSaveData SaveData => (CorreWithCareSaveData)Instance._SaveData;
+    public static CWCModule Instance;
+    public override Type SettingsType => typeof(CWCSettings);
+    public static CWCSettings Settings => (CWCSettings)Instance._Settings;
+    public override Type SessionType => typeof(CWCSession);
+    public static CWCSession Session => (CWCSession)Instance._Session;
+    public override Type SaveDataType => typeof(CWCSaveData);
+    public static CWCSaveData SaveData => (CWCSaveData)Instance._SaveData;
 
     public string ModDirectory
     {
         get => Path.Combine(Path.GetDirectoryName(FakeAssembly.GetFakeEntryAssembly().Location), $"Mods\\{Name}");
     }
 
-    public CorreWithCareModule()
+    public CWCModule()
     {
         Instance = this;
     }
@@ -50,11 +51,14 @@ public class CorreWithCareModule : EverestModule
 
     public override void Load()
     {
-        Print.Info("Corre is standing by");
+        Prt.Info("Corre is standing by");
         Instance = this;
+
+        LoadingManager.Load();
     }
 
     public override void Unload()
     {
+        LoadingManager.Unload();
     }
 }

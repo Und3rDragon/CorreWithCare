@@ -26,6 +26,11 @@
       <None Remove="ModFolder\Loenn\triggers\debugging\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Earcut" Version="3.0.2-r3" />
+      <PackageReference Include="NLua" Version="1.7.9" />
+    </ItemGroup>
+
 	<!--
 	<ItemGroup>
 		<CelesteModReference Include="CommunalHelper" />

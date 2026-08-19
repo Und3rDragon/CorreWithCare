@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CorreWithCare;
+namespace CorreWithCare.Utils;
 
-public class CorreWithCareSaveData : EverestModuleSaveData
+public static class Access
 {
-
+    
 }
