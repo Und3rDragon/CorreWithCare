@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Celeste;
 using Celeste.Mod;
+using Celeste.Mod.Entities;
 using CorreWithCare.Utils;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -32,7 +33,7 @@ namespace CorreWithCare.Features;
 /// C# 侧注册效果：
 ///   DialogCommands.Register("xxx", (player, level, param) => SomeRoutine(...));
 /// </summary>
-public static class DialogCommands
+public static partial class DialogCommands
 {
     /// <summary>指令前缀。Dialog 中所有 {corre_xxx} 形式的指令都会被框架捕获。</summary>
     public const string Prefix = "corre";
@@ -107,7 +108,7 @@ public static class DialogCommands
     {
         IL.Celeste.FancyText.Parse += ParseCorreTriggers;
         On.Celeste.Textbox.ctor_string_Language_Func1Array += AddCorreEvents;
-        On.Celeste.Level.SkipCutscene += Level_SkipCutscene;
+        On.Celeste.Level.SkipCutscene += SkipCutscene;
     }
 
     // [Unload]
@@ -115,15 +116,15 @@ public static class DialogCommands
     {
         IL.Celeste.FancyText.Parse -= ParseCorreTriggers;
         On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddCorreEvents;
-        On.Celeste.Level.SkipCutscene -= Level_SkipCutscene;
+        On.Celeste.Level.SkipCutscene -= SkipCutscene;
     }
 
     // ==================== 解析层：FancyText.Parse IL 钩子 ====================
 
     /// <summary>
     /// 在 FancyText.Parse 内部识别所有 {corre_xxx ...} 形式的指令。
-    /// 复用 PrismaticHelper 的插入点：找到 "savedata" 指令处理位置，
-    /// 此时局部变量 s（指令名）与 stringList（参数）可用。
+    /// 找到 "savedata" 指令处理位置，
+    /// 引用局部变量，指令名称 s与参数 stringList
     /// </summary>
     private static void ParseCorreTriggers(ILContext il)
     {
@@ -214,7 +215,7 @@ public static class DialogCommands
 
     // ==================== 跳过处理 ====================
 
-    private static void Level_SkipCutscene(On.Celeste.Level.orig_SkipCutscene orig, Level self)
+    private static void SkipCutscene(On.Celeste.Level.orig_SkipCutscene orig, Level self)
     {
         var player = self.Tracker.GetEntity<Player>();
         self.Entities.With<Textbox>(textbox =>
@@ -231,7 +232,7 @@ public static class DialogCommands
                 }
             }
         });
-
+        
         orig(self);
     }
 
