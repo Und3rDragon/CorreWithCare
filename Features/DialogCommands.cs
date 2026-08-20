@@ -16,14 +16,6 @@ namespace CorreWithCare.Features;
 /// Dialog 指令框架：允许在 Dialog 文件中插入自定义指令 {corre_xxx 参数...}，
 /// 对话进行到该位置时自动触发注册表中对应的协程效果。
 ///
-/// 通用框架：
-///   1. 解析：FancyText.Parse IL 钩子识别所有 {corre_xxx 参数} 形式的指令，转为节点
-///   2. 事件：Textbox 构造时把节点转为 events 协程，对话到点自动执行
-///   3. 注册：Register("xxx", effect) 注册任意指令的效果
-///   4. 修饰符：&（静默）/ ~（并发）前缀，作用于任意指令
-///   5. 跳过：corre_on_skip 指令在跳过过场时执行
-///   6. 扩展：CustomParseHandler 让外部模块（如 DialogChoice）注入自己的指令解析
-///
 /// Dialog 文件用法：
 ///   {corre_xxx 参数...}              — 阻塞式：对话等待效果完成
 ///   {&corre_xxx 参数...}             — 静默式
@@ -103,7 +95,7 @@ public static partial class DialogCommands
 
     // ==================== 钩子生命周期 ====================
 
-    // [Load]
+    [Load]
     public static void Load()
     {
         IL.Celeste.FancyText.Parse += ParseCorreTriggers;
@@ -111,7 +103,7 @@ public static partial class DialogCommands
         On.Celeste.Level.SkipCutscene += SkipCutscene;
     }
 
-    // [Unload]
+    [Unload]
     public static void Unload()
     {
         IL.Celeste.FancyText.Parse -= ParseCorreTriggers;
@@ -121,11 +113,7 @@ public static partial class DialogCommands
 
     // ==================== 解析层：FancyText.Parse IL 钩子 ====================
 
-    /// <summary>
-    /// 在 FancyText.Parse 内部识别所有 {corre_xxx ...} 形式的指令。
-    /// 找到 "savedata" 指令处理位置，
-    /// 引用局部变量，指令名称 s与参数 stringList
-    /// </summary>
+    /// <summary>在 FancyText.Parse 内部识别所有 {corre_xxx ...} 形式的指令并转为节点。</summary>
     private static void ParseCorreTriggers(ILContext il)
     {
         var cursor = new ILCursor(il);
@@ -157,7 +145,7 @@ public static partial class DialogCommands
 
         string cmd = baseName[(Prefix.Length + 1)..];
 
-        // 外部模块优先（如 DialogChoice 的 corre_choice）
+        // 外部模块优先（如 DialogChoices 的 corre_choice）
         if (CustomParseHandler?.Invoke(cmd, vals, nodes) == true)
             return;
 
@@ -169,11 +157,7 @@ public static partial class DialogCommands
 
     // ==================== 事件层：Textbox 构造钩子 ====================
 
-    /// <summary>
-    /// Textbox 构造时把 CorreTrigger 节点转换为 events 数组里的协程。
-    /// FancyText.Trigger.Index 指向 events 中对应位置，对话播放到该字符时自动触发。
-    /// 基于 selfData 当前 events 追加，兼容其他模块（如 DialogChoice）的钩子。
-    /// </summary>
+    /// <summary>Textbox 构造时把 CorreTrigger 节点转换为 events 协程，对话到点自动触发。</summary>
     private static void AddCorreEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
         Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
     {
