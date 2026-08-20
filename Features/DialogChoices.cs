@@ -190,7 +190,7 @@ public static class DialogChoices
             return;
 
         PendingChoices[dialog] = list;
-        Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 对话 '{dialog}' 收集到 {list.Count} 个分支选项");
+        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 对话 '{dialog}' 收集到 {list.Count} 个分支选项");
     }
 
     // ==================== 打断：过场结束前 ====================
@@ -228,7 +228,7 @@ public static class DialogChoices
             return false;
 
         PendingChoices.Remove(dialogID);
-        Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 对话 '{dialogID}' 结束，打断过场，弹出 {choices.Count} 个选项");
+        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 对话 '{dialogID}' 结束，打断过场，弹出 {choices.Count} 个选项");
         dc.Add(new Coroutine(ChoiceRoutine(dc, dc.Level, choices)));
         return true;
     }
@@ -244,11 +244,11 @@ public static class DialogChoices
         yield return ChoicePrompt.Prompt(contents);
 
         int idx = ChoicePrompt.Choice;
-        Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 玩家选择了索引 {idx}");
+        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 玩家选择了索引 {idx}");
         if (idx >= 0 && idx < choices.Count)
         {
             string target = choices[idx].Target;
-            Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 跳转到对话 '{target}'");
+            // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 跳转到对话 '{target}'");
             if (!string.IsNullOrEmpty(target))
             {
                 // 跳转对话仍处于过场中，玩家保持锁定
@@ -257,7 +257,7 @@ public static class DialogChoices
         }
 
         // 分支流程结束，真正结束过场（原版 OnEnd 恢复玩家状态）
-        Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 分支流程结束，结束过场");
+        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 分支流程结束，结束过场");
         self.EndCutscene(level, true);
     }
 
