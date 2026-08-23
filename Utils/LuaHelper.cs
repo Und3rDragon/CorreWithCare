@@ -13,6 +13,16 @@ namespace CorreWithCare.Utils;
 /// </summary>
 public static class LuaHelper
 {
+    // ==================== 内置 Lua 环境 ====================
+
+    /// <summary>
+    /// 获取 Everest 内置的 Lua 上下文。
+    /// 注意：不要自行 new Lua()，因为那会创建独立于 Everest 的 Lua 宿主，
+    /// 并可能触使 Everest relinker 处理 NLua/KeraLua 程序集而导致被拉黑。
+    /// 使用 Everest.LuaLoader.Context 可复用 Everest 已初始化的 Lua 运行环境。
+    /// </summary>
+    public static Lua LuaContext => Everest.LuaLoader.Context;
+
     // ==================== 核心方法 ====================
 
     /// <summary>
@@ -43,6 +53,14 @@ public static class LuaHelper
     }
 
     /// <summary>
+    /// 使用 Everest 内置 Lua 上下文加载并执行一个 Lua 文件
+    /// </summary>
+    public static object[] Require(string filePath)
+    {
+        return Require(LuaContext, filePath);
+    }
+
+    /// <summary>
     /// 从 Mod 资源中获取文件内容
     /// </summary>
     public static string GetFileContent(string path)
@@ -69,12 +87,15 @@ public static class LuaHelper
     }
 
     /// <summary>
-    /// 创建一个独立的 Lua 环境，包含基础库
+    /// 获取 Everest 内置的 Lua 环境（含基础库与 import 函数）。
+    /// 原 CreateLuaEnvironment()（new Lua()）已移除，改用 Everest.LuaLoader.Context，
+    /// 避免触发 Everest relinker 对 NLua/KeraLua 程序集的拉黑。
     /// </summary>
+    [Obsolete("请使用 LuaContext / Everest.LuaLoader.Context 替代；new Lua() 会触发 Everest relinker 拉黑问题")]
     public static Lua CreateLuaEnvironment()
     {
-        var lua = new Lua();
-        
+        var lua = LuaContext;
+
         // 加载基础库
         lua.LoadCLRPackage();
         lua.DoString(@"
@@ -166,7 +187,7 @@ public static class LuaHelper
     }
 
     /// <summary>
-    /// 将 Lua 协程函数包装为 IEnumerator
+    /// 将 Lua 协程封装为 IEnumerator
     /// </summary>
     public static IEnumerator WrapCoroutine(LuaFunction coroutineFunc, params object[] args)
     {
@@ -251,7 +272,7 @@ public static class LuaHelper
         // 因为 NewTable(string) 返回 void，无法直接使用
         lua.DoString("return {}");
         var table = lua["_"] as LuaTable;
-        
+
         if (table == null)
         {
             // 备用方案：通过 DoString 直接创建
@@ -273,6 +294,14 @@ public static class LuaHelper
             table[pair.Key] = pair.Value;
         }
         return table;
+    }
+
+    /// <summary>
+    /// 使用 Everest 内置 Lua 上下文将 C# Dictionary 转换为 Lua Table
+    /// </summary>
+    public static LuaTable DictionaryToLuaTable(IDictionary<object, object> dict)
+    {
+        return DictionaryToLuaTable(LuaContext, dict);
     }
 
     /// <summary>
@@ -304,6 +333,14 @@ public static class LuaHelper
             table[index++] = item;
         }
         return table;
+    }
+
+    /// <summary>
+    /// 使用 Everest 内置 Lua 上下文将 C# List 转换为 Lua Table
+    /// </summary>
+    public static LuaTable ListToLuaTable(IList list)
+    {
+        return ListToLuaTable(LuaContext, list);
     }
 
     /// <summary>
@@ -417,5 +454,13 @@ public static class LuaHelper
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// 使用 Everest 内置 Lua 上下文创建一个空的 Lua Table
+    /// </summary>
+    public static LuaTable CreateLuaTable()
+    {
+        return CreateLuaTable(LuaContext);
     }
 }

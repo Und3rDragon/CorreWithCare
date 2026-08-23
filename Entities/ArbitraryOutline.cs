@@ -5,6 +5,7 @@ using CorreWithCare.Core;
 using CorreWithCare.Utils;
 using Microsoft.Xna.Framework.Graphics;
 using static CorreWithCare.Utils.ColorUtils;
+using EarcutDotNet;
 
 namespace CorreWithCare.Entities;
 
@@ -92,11 +93,13 @@ public class ArbitraryOutline : BaseEntity
         }
 
         // triangulation
-        var indices = Earcut.earcut(flatVertices, null, 2);
+        // Earcut.NET（纯 C#）Triangulate 返回 TriangleList（int[] 支撑的缓冲），ToArray() 取全部索引
+        var triangleList = EarcutDotNet.Earcut.Triangulate(flatVertices, default, 2);
+        int[] indices = triangleList.ToArray();
 
         // create point arrays
-        var fill = new VertexPositionColor[indices.Count];
-        for (int i = 0; i < indices.Count; i++)
+        var fill = new VertexPositionColor[indices.Length];
+        for (int i = 0; i < indices.Length; i++)
         {
             ref var f = ref fill[i];
             int idx = indices[i];
