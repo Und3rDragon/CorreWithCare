@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
 using Celeste;
 using Celeste.Mod;
+using Celeste.Mod.Entities;
 using CorreWithCare.Core;
 using CorreWithCare.Utils;
 using Microsoft.Xna.Framework;
@@ -18,23 +19,25 @@ using static CorreWithCare.Core.ExtendedAttributes;
 namespace CorreWithCare.Features;
 
 /// <summary>
-/// 对话分支选择：{corre_choice display target}
-///   display = 选项显示文本对应的 Dialog ID
-///   target  = 选择该选项后跳转的 Dialog ID
-///
-/// 功能：对话中的分支指令全部收集，对话结束后弹出选项（玩家锁定），
-/// 选择后跳转到目标对话（仍锁定），播完恢复操作；对话中无分支指令则正常结束。
-///
+/// 对话分支与跳转：{corre_choice display [target]}、{corre_jumpto target [flag]}。
 /// 通过 DialogCommands 框架的 CustomParseHandler 扩展点接入。
-/// 使用：在 Dialog 文件中写 {corre_choice display target} 即可，无需 C# 侧额外注册。
 /// </summary>
 public static class DialogChoices
 {
-    /// <summary>分支选择指令名：{corre_choice display target}</summary>
+    /// <summary>分支选择指令名：{corre_choice display [target]}</summary>
     public const string ChoiceCmd = "choice";
+
+    /// <summary>跳转指令名：{corre_jumpto target [restrictFlag]}</summary>
+    public const string JumpCmd = "jumpto";
 
     /// <summary>已收集但尚未消费的分支选项：dialogID → 选项列表。</summary>
     private static readonly Dictionary<string, List<CorreChoiceNode>> PendingChoices = new();
+
+    /// <summary>跨对话链累积、去重后的分支选项（最终在稳定对话统一弹出）。</summary>
+    private static readonly List<CorreChoiceNode> AccumulatedChoices = new();
+
+    /// <summary>待跳转的目标 Dialog ID（jumpto 触发时标记，由 IL 钩子无缝衔接；空=无待跳转）。</summary>
+    private static string PendingJump = "";
 
     private static Func<string, List<string>, List<FancyText.Node>, bool> _prevParseHandler;
 
@@ -43,25 +46,49 @@ public static class DialogChoices
 
     // ==================== 节点 ====================
 
-    /// <summary>对话分支选择节点：{corre_choice display target}</summary>
-    public class CorreChoiceNode : FancyText.Node
+    /// <summary>对话分支选择节点：{corre_choice display [target]}。</summary>
+    public class CorreChoiceNode : FancyText.Trigger
     {
         /// <summary>选项显示文本的 Dialog ID。</summary>
         public readonly string Display = "";
 
-        /// <summary>选择后跳转的 Dialog ID。</summary>
+        /// <summary>选择后跳转的 Dialog ID（空 = 直接结束过场）。</summary>
         public readonly string Target = "";
 
         public CorreChoiceNode(List<string> rawParams)
         {
-            if (rawParams.Count < 2)
+            if (rawParams.Count < 1)
             {
-                Prt.Warn($"Found malformed {DialogCommands.Prefix}_{ChoiceCmd}! Expected: {{{DialogCommands.Prefix}_{ChoiceCmd} display target}}");
+                Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] 指令缺少参数！Expected: {{{DialogCommands.Prefix}_{ChoiceCmd} display [target]}}");
                 return;
             }
 
             Display = rawParams[0];
-            Target = rawParams[1];
+            if (rawParams.Count >= 2)
+                Target = rawParams[1];
+        }
+    }
+
+    /// <summary>跳转节点：{corre_jumpto target [restrictFlag]}。</summary>
+    public class CorreJumpNode : FancyText.Trigger
+    {
+        /// <summary>跳转目标的 Dialog ID。</summary>
+        public readonly string Target = "";
+
+        /// <summary>条件 flag 名（可选；非空时检测 flag 为 true 才跳转）。</summary>
+        public readonly string RestrictFlag = "";
+
+        public CorreJumpNode(List<string> rawParams)
+        {
+            if (rawParams.Count < 1)
+            {
+                Prt.Warn($"[{DialogCommands.Prefix}_{JumpCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpCmd} target [restrictFlag]}}");
+                return;
+            }
+
+            Target = rawParams[0];
+            if (rawParams.Count >= 2)
+                RestrictFlag = rawParams[1];
         }
     }
 
@@ -80,10 +107,17 @@ public static class DialogChoices
                 return true;
             }
 
+            if (cmd == JumpCmd)
+            {
+                nodes.Add(new CorreJumpNode(vals));
+                return true;
+            }
+
             return _prevParseHandler?.Invoke(cmd, vals, nodes) ?? false;
         };
 
-        On.Celeste.Textbox.ctor_string_Language_Func1Array += CollectChoices;
+        On.Celeste.Textbox.ctor_string_Language_Func1Array += AddChoiceEvents;
+        On.Celeste.Textbox.ctor_string_Language_Func1Array += AddJumpEvents;
         On.Celeste.Level.SkipCutscene += ClearChoicesOnSkip;
 
         // IL 钩 DialogCutscene.Cutscene 状态机 MoveNext（在 EndCutscene 调用前打断）
@@ -99,12 +133,15 @@ public static class DialogChoices
         DialogCommands.CustomParseHandler = _prevParseHandler;
         _prevParseHandler = null;
 
-        On.Celeste.Textbox.ctor_string_Language_Func1Array -= CollectChoices;
+        On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddChoiceEvents;
+        On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddJumpEvents;
         On.Celeste.Level.SkipCutscene -= ClearChoicesOnSkip;
 
         _cutsceneIlHook?.Dispose();
         _cutsceneIlHook = null;
         PendingChoices.Clear();
+        AccumulatedChoices.Clear();
+        PendingJump = "";
     }
 
     /// <summary>创建 DialogCutscene.Cutscene 状态机的 IL 钩子（用于打断过场结束）。</summary>
@@ -167,11 +204,8 @@ public static class DialogChoices
 
     // ==================== 收集：Textbox 构造时 ====================
 
-    /// <summary>
-    /// Textbox 构造时收集该对话中所有分支选项（按 dialogID 存），
-    /// 指令在对话开头/中间/结尾都会被收集，等对话结束统一使用。
-    /// </summary>
-    private static void CollectChoices(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
+    /// <summary>把对话中的 choice 节点在播放到对应位置时累积为选项。</summary>
+    private static void AddChoiceEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
         Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
     {
         orig(self, dialog, language, events);
@@ -179,18 +213,142 @@ public static class DialogChoices
         var selfData = new DynamicData(self);
         var text = selfData.Get<FancyText.Text>("text");
 
-        var list = new List<CorreChoiceNode>();
+        var choiceNodes = new List<CorreChoiceNode>();
         foreach (var node in text.Nodes)
         {
             if (node is CorreChoiceNode ch)
-                list.Add(ch);
+                choiceNodes.Add(ch);
         }
 
-        if (list.Count == 0)
+        if (choiceNodes.Count == 0)
             return;
 
-        PendingChoices[dialog] = list;
-        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 对话 '{dialog}' 收集到 {list.Count} 个分支选项");
+        // 读取当前 events（可能已被其他钩子更新），在其基础上追加 choice 事件
+        var currentEvents = selfData.Get<Func<IEnumerator>[]>("events") ?? events ?? new Func<IEnumerator>[0];
+        int baseCount = currentEvents.Length;
+
+        var choiceEvents = new List<Func<IEnumerator>>();
+        for (int i = 0; i < choiceNodes.Count; i++)
+        {
+            var ch = choiceNodes[i];
+            // 给 choice 节点设置 Index，Textbox 播放到该位置时触发累积
+            ch.Index = baseCount + choiceEvents.Count;
+            var copy = ch; // 避免闭包自引用
+            choiceEvents.Add(() => ChoiceCoroutine(copy));
+        }
+
+        var newEvents = new Func<IEnumerator>[currentEvents.Length + choiceEvents.Count];
+        Array.Copy(currentEvents, newEvents, currentEvents.Length);
+        for (int i = 0; i < choiceEvents.Count; i++)
+            newEvents[currentEvents.Length + i] = choiceEvents[i];
+
+        selfData.Set("events", newEvents);
+    }
+
+    /// <summary>播放到 choice 位置时累积该选项到全局池（去重）。</summary>
+    private static IEnumerator ChoiceCoroutine(CorreChoiceNode choice)
+    {
+        AccumulateChoice(choice);
+        yield break;
+    }
+
+    /// <summary>把 choice 去重累积到全局池（按 display：单参数优先，双参数取最后）。</summary>
+    private static void AccumulateChoice(CorreChoiceNode choice)
+    {
+        int idx = AccumulatedChoices.FindIndex(c => c.Display == choice.Display);
+        if (idx < 0)
+        {
+            AccumulatedChoices.Add(choice);
+            return;
+        }
+
+        var existing = AccumulatedChoices[idx];
+        bool existingSingle = string.IsNullOrEmpty(existing.Target);
+        bool newSingle = string.IsNullOrEmpty(choice.Target);
+
+        if (newSingle && !existingSingle)
+        {
+            // 新的是单参数（直接结束）且已有的是双参数 → 单参数优先，替换
+            AccumulatedChoices[idx] = choice;
+        }
+        else if (!newSingle && !existingSingle)
+        {
+            // 都是双参数 → 保留最后一个
+            AccumulatedChoices[idx] = choice;
+        }
+        // 其他情况（已有单参数，或都是单参数）→ 保留已有的
+    }
+
+    // ==================== 跳转：jumpto events ====================
+    /// <summary>把对话中的 jumpto 节点在播放到对应位置时标记待跳转。</summary>
+    private static void AddJumpEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
+        Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
+    {
+        orig(self, dialog, language, events);
+
+        var selfData = new DynamicData(self);
+        var text = selfData.Get<FancyText.Text>("text");
+
+        var jumpNodes = new List<CorreJumpNode>();
+        foreach (var node in text.Nodes)
+        {
+            if (node is CorreJumpNode jump)
+                jumpNodes.Add(jump);
+        }
+
+        if (jumpNodes.Count == 0)
+            return;
+
+        var currentEvents = selfData.Get<Func<IEnumerator>[]>("events") ?? events ?? new Func<IEnumerator>[0];
+        int baseCount = currentEvents.Length;
+
+        var jumpEvents = new List<Func<IEnumerator>>();
+        for (int i = 0; i < jumpNodes.Count; i++)
+        {
+            var jump = jumpNodes[i];
+            jump.Index = baseCount + jumpEvents.Count;
+            var copy = jump; // 避免闭包自引用
+            jumpEvents.Add(() => JumpCoroutine(copy));
+        }
+
+        var newEvents = new Func<IEnumerator>[currentEvents.Length + jumpEvents.Count];
+        Array.Copy(currentEvents, newEvents, currentEvents.Length);
+        for (int i = 0; i < jumpEvents.Count; i++)
+            newEvents[currentEvents.Length + i] = jumpEvents[i];
+
+        selfData.Set("events", newEvents);
+    }
+    /// <summary>播放到 jumpto 时标记待跳转（检测可选 flag 后），由过场结束钩子无缝衔接。</summary>
+    private static IEnumerator JumpCoroutine(CorreJumpNode jump)
+    {
+        // 有 restrictFlag：仅当 flag 为 true 才跳转
+        if (!string.IsNullOrEmpty(jump.RestrictFlag))
+        {
+            if (!jump.RestrictFlag.GetFlag())
+            {
+                yield break;
+            }
+        }
+
+        if (string.IsNullOrEmpty(jump.Target))
+            yield break;
+        PendingJump = jump.Target;
+
+        // 关键：调用 Textbox.Close()（设 Opened=false），让 Textbox.Say 的 IEnumerator 返回，
+        // 从而旧 Cutscene 协程走完 yield Textbox.Say → 走到 EndCutscene → IL 钩子无缝衔接。
+        // 不能用 RemoveSelf()（Opened 仍为 true，Textbox.Say 永不返回 → 卡死）。
+        if (Engine.Scene != null)
+        {
+            foreach (var e in Engine.Scene.Entities)
+            {
+                if (e is Textbox tb)
+                {
+                    tb.Close();
+                    break;
+                }
+            }
+        }
+        yield break;
     }
 
     // ==================== 打断：过场结束前 ====================
@@ -213,27 +371,39 @@ public static class DialogChoices
 
         return dc != null && InterceptCutscene(dc);
     }
-
-    /// <summary>
-    /// 过场结束前检查该对话是否收集到分支：有则打断过场（玩家保持锁定），
-    /// 挂选择流程接管；返回 false 时过场正常结束。
-    /// </summary>
+    /// <summary>过场结束前统一决策：有待跳转则无缝衔接新过场，有累积选项则弹出，否则正常结束。</summary>
     private static bool InterceptCutscene(Celeste.Mod.Entities.DialogCutscene dc)
-    {
-        if (PendingChoices.Count == 0)
-            return false;
+    {
 
-        string dialogID = new DynamicData(dc).Get<string>("dialogID");
-        if (!PendingChoices.TryGetValue(dialogID, out var choices) || choices.Count == 0)
+        // 1. 有 PendingJump → 无缝衔接新过场
+        if (!string.IsNullOrEmpty(PendingJump))
+        {
+            string target = PendingJump;
+            PendingJump = "";
+            var player = (Engine.Scene as Level)?.Tracker.GetEntity<Player>();
+            if (player != null)
+            {
+                // 移除旧 DialogCutscene（不触发 OnEnd 解锁——因为 InterceptCutscene 返回 true 跳过 EndCutscene 调用）
+                dc.RemoveSelf();
+                // Add 新 DialogCutscene（OnBegin 锁定玩家）
+                if (!Celeste.Mod.Entities.DialogCutscene.IsInProgress(target))
+                    Engine.Scene.Add(new Celeste.Mod.Entities.DialogCutscene(target, player, false));
+                return true;
+            }
             return false;
+        }
 
-        PendingChoices.Remove(dialogID);
-        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 对话 '{dialogID}' 结束，打断过场，弹出 {choices.Count} 个选项");
+        // 2. 有累积 choice → 弹选项
+        if (AccumulatedChoices.Count == 0)
+        {
+            return false;
+        }
+        var choices = new List<CorreChoiceNode>(AccumulatedChoices);
+        AccumulatedChoices.Clear();
         dc.Add(new Coroutine(ChoiceRoutine(dc, dc.Level, choices)));
         return true;
     }
-
-    /// <summary>分支流程：弹选项 → 玩家选择 → 跳转新对话 → 真正结束过场。</summary>
+    /// <summary>弹选项并等待玩家选择：选 target 无缝衔接新过场，选无 target 直接结束过场。</summary>
     private static IEnumerator ChoiceRoutine(CutsceneEntity self, Level level, List<CorreChoiceNode> choices)
     {
         var contents = new string[choices.Count];
@@ -243,21 +413,24 @@ public static class DialogChoices
         // 玩家处于过场锁定中，弹出选项
         yield return ChoicePrompt.Prompt(contents);
 
-        int idx = ChoicePrompt.Choice;
-        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 玩家选择了索引 {idx}");
+        int idx = ChoicePrompt.Choice;
         if (idx >= 0 && idx < choices.Count)
         {
-            string target = choices[idx].Target;
-            // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 跳转到对话 '{target}'");
+            string target = choices[idx].Target;
             if (!string.IsNullOrEmpty(target))
             {
-                // 跳转对话仍处于过场中，玩家保持锁定
-                yield return Textbox.Say(target, null);
+                // 选 target → 无缝衔接新过场（保持锁定），结束当前过场
+                var player = (Engine.Scene as Level)?.Tracker.GetEntity<Player>();
+                if (player != null)
+                {
+                    Engine.Scene.Add(new Celeste.Mod.Entities.DialogCutscene(target, player, false));
+                    self.EndCutscene(level, true);
+                    yield break;
+                }
             }
         }
 
-        // 分支流程结束，真正结束过场（原版 OnEnd 恢复玩家状态）
-        // Prt.Info($"[{DialogCommands.Prefix}_{ChoiceCmd}] 分支流程结束，结束过场");
+        // 选无 target 或 player 缺失 → 正常结束过场
         self.EndCutscene(level, true);
     }
 
@@ -269,6 +442,8 @@ public static class DialogChoices
     private static void ClearChoicesOnSkip(On.Celeste.Level.orig_SkipCutscene orig, Level self)
     {
         PendingChoices.Clear();
+        AccumulatedChoices.Clear();
+        PendingJump = "";
         orig(self);
 
         foreach (var ui in self.Tracker.GetEntities<ChoicePrompt>())
@@ -349,6 +524,12 @@ public class ChoicePrompt : BaseEntity
 
     public override void Render()
     {
+        if (this.options.Count == 0)
+        {
+            base.Render();
+            return;
+        }
+
         for (int index = scroll; index < this.options.Count && index - scroll < textboxScreenLimit; ++index)
         {
             if (index != currentOptionIndex)
@@ -358,7 +539,8 @@ public class ChoicePrompt : BaseEntity
         }
 
         // 当前选中项最后渲染（盖在最上层，避免弹出动画被遮挡）
-        options[currentOptionIndex].Render(renderOffset + textboxPosition(currentOptionIndex, scroll));
+        int safeIndex = Math.Min(currentOptionIndex, this.options.Count - 1);
+        options[safeIndex].Render(renderOffset + textboxPosition(safeIndex, scroll));
 
         base.Render();
     }
@@ -444,6 +626,12 @@ public class Option : BaseEntity
             {
                 continue;
             }
+
+            // 防御：SpriteId 无效时跳过该头像，避免 Missing animation name 崩溃
+            if (string.IsNullOrEmpty(portrait.SpriteId))
+                break;
+            if (!GFX.PortraitsSpriteBank.SpriteData.ContainsKey(portrait.SpriteId))
+                break;
 
             this.Portrait = GFX.PortraitsSpriteBank.Create(portrait.SpriteId);
             this.Portrait.Play(portrait.IdleAnimation);
