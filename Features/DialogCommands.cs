@@ -128,6 +128,8 @@ public static partial class DialogCommands
 
     /// <summary>
     /// 统一指令分发：先交给 CustomParseHandler（外部模块），未处理则按 on_skip / 普通指令处理。
+    /// 同时支持闭合标签 {/corre_xxx}：`{/corre_hide}` 解析后 s="/corre_hide"，
+    /// 通过 cmd 传 "/xxx"（带前导斜杠）让外部模块识别为闭合。
     /// </summary>
     private static void HandleParse(FancyText text, string s, List<string> vals)
     {
@@ -140,13 +142,18 @@ public static partial class DialogCommands
         if (baseName.StartsWith("&")) { silent = true; baseName = baseName[1..]; }
         else if (baseName.StartsWith("~")) { concurrent = true; baseName = baseName[1..]; }
 
-        if (!baseName.StartsWith(Prefix + "_"))
+        // 识别闭合标签 {/corre_xxx}：前导斜杠，去掉后判断名前缀
+        bool closing = baseName.StartsWith("/");
+        string name = closing ? baseName[1..] : baseName;
+
+        if (!name.StartsWith(Prefix + "_"))
             return;
 
-        string cmd = baseName[(Prefix.Length + 1)..];
+        string cmd = name[(Prefix.Length + 1)..];
+        string dispatchCmd = closing ? "/" + cmd : cmd;
 
-        // 外部模块优先（如 DialogChoices 的 corre_choice）
-        if (CustomParseHandler?.Invoke(cmd, vals, nodes) == true)
+        // 外部模块优先（如 DialogChoices 的 corre_choice、corre_hide 的闭合）
+        if (CustomParseHandler?.Invoke(dispatchCmd, vals, nodes) == true)
             return;
 
         if (cmd == OnSkip)
