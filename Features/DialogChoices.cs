@@ -41,9 +41,6 @@ public static class DialogChoices
 
     private static Func<string, List<string>, List<FancyText.Node>, bool> _prevParseHandler;
 
-    /// <summary>IL 钩子句柄（DialogCutscene.Cutscene 状态机 MoveNext）。</summary>
-    private static ILHook _cutsceneIlHook;
-
     // ==================== 节点 ====================
 
     /// <summary>对话分支选择节点：{corre_choice display [target]}。</summary>
@@ -120,11 +117,8 @@ public static class DialogChoices
         On.Celeste.Textbox.ctor_string_Language_Func1Array += AddJumpEvents;
         On.Celeste.Level.SkipCutscene += ClearChoicesOnSkip;
 
-        // IL 钩 DialogCutscene.Cutscene 状态机 MoveNext（在 EndCutscene 调用前打断）
-        // 写法参考 ChroniaHelper CustomBooster：GetStateMachineTarget() + ILHook
-        _cutsceneIlHook = HookCutsceneMoveNext();
-        if (_cutsceneIlHook == null)
-            Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] 未找到 DialogCutscene.Cutscene 状态机，打断功能不可用");
+        // On hook Level.EndCutscene（统一过场结束点）：DialogCutscene / CustomNPC / MoreCustomNPC 播完对话时都会调用
+        On.Celeste.Level.EndCutscene += LevelEndCutscene;
     }
 
     [Unload]
@@ -137,74 +131,67 @@ public static class DialogChoices
         On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddJumpEvents;
         On.Celeste.Level.SkipCutscene -= ClearChoicesOnSkip;
 
-        _cutsceneIlHook?.Dispose();
-        _cutsceneIlHook = null;
+        On.Celeste.Level.EndCutscene -= LevelEndCutscene;
         PendingChoices.Clear();
         AccumulatedChoices.Clear();
         PendingJump = "";
     }
 
-    /// <summary>创建 DialogCutscene.Cutscene 状态机的 IL 钩子（用于打断过场结束）。</summary>
-    private static ILHook HookCutsceneMoveNext()
+    // ==================== 收集：Textbox 构造时 ====================
+
+    // ==================== 过场结束：统一决策（On hook Level.EndCutscene） ====================
+
+    /// <summary>
+    /// On hook：Level.EndCutscene（统一过场结束点）。
+    /// DialogCutscene / CustomNPC / MoreCustomNPC 播完对话时都会调用 Level.EndCutscene。
+    /// 有 pending choice/jumpto → 接管（不调 orig，保持锁定）；否则正常结束。
+    /// </summary>
+    private static void LevelEndCutscene(On.Celeste.Level.orig_EndCutscene orig, Level self)
     {
-        var cutscene = typeof(Celeste.Mod.Entities.DialogCutscene)
-            .GetMethod("Cutscene", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (cutscene == null)
-            return null;
-
-        var moveNext = cutscene.GetStateMachineTarget();
-        if (moveNext == null)
-            return null;
-
-        return new ILHook(moveNext, InterceptCutsceneIL);
+        if (HandleEndCutscene(self))
+            return; // 已接管（弹选项/无缝衔接），保持玩家锁定
+        orig(self);
     }
 
     /// <summary>
-    /// 在 EndCutscene 调用前插入打断逻辑：有分支则跳过过场结束（由选择流程接管），无分支放行。
+    /// 统一过场结束决策（通用：DialogCutscene / CustomNPC / MoreCustomNPC 播完对话时都会走到这里）：
+    ///   有 PendingJump → 无缝衔接新过场，返回 true（跳过解锁）
+    ///   有累积 choice → 弹选项，返回 true（跳过解锁）
+    ///   否则 → 返回 false（正常解锁）
     /// </summary>
-    private static void InterceptCutsceneIL(ILContext il)
+    private static bool HandleEndCutscene(Level level)
     {
-        var cursor = new ILCursor(il);
-
-        // 1. 先定位 EndCutscene 调用
-        if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCallvirt("Celeste.CutsceneEntity", "EndCutscene")))
+        // 1. 有 PendingJump → 无缝衔接新过场
+        if (!string.IsNullOrEmpty(PendingJump))
         {
-            Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] IL 钩子未找到 EndCutscene 调用");
-            return;
-        }
-        var callvirt = cursor.Next;
-        var afterEndCutscene = callvirt.Next;
-
-        // 2. 往回找参数序列起点：ldc.i4.1 → ldfld level → ldarg.0 → ldloc.1
-        if (!cursor.TryGotoPrev(MoveType.Before, instr => instr.MatchLdcI4(1)))
-        {
-            Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] IL 钩子未找到 EndCutscene 参数 ldc.i4.1");
-            return;
-        }
-        if (!cursor.TryGotoPrev(MoveType.Before, instr => instr.Operand is FieldReference f && f.Name == "level"))
-        {
-            Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] IL 钩子未找到 EndCutscene 参数 level");
-            return;
-        }
-        if (!cursor.TryGotoPrev(MoveType.Before, instr => instr.OpCode == OpCodes.Ldarg_0))
-        {
-            Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] IL 钩子未找到 EndCutscene 参数 ldarg.0");
-            return;
-        }
-        if (!cursor.TryGotoPrev(MoveType.Before, instr => instr.OpCode == OpCodes.Ldloc_1))
-        {
-            Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] IL 钩子未找到 EndCutscene 参数 ldloc.1");
-            return;
+            string target = PendingJump;
+            PendingJump = "";
+            var player = level?.Tracker.GetEntity<Player>();
+            if (player != null)
+            {
+                // Add 新 DialogCutscene（OnBegin 锁定玩家）
+                if (!Celeste.Mod.Entities.DialogCutscene.IsInProgress(target))
+                    Engine.Scene.Add(new Celeste.Mod.Entities.DialogCutscene(target, player, false));
+                return true;
+            }
+            return false;
         }
 
-        // 3. 插入点栈为空：EmitDelegate 压 bool → Brtrue 消费并跳转
-        cursor.EmitDelegate<Func<bool>>(FindCutsceneAndIntercept);
-        cursor.Emit(OpCodes.Brtrue, afterEndCutscene);
+        // 2. 有累积 choice → 弹选项
+        if (AccumulatedChoices.Count == 0)
+            return false;
+
+        var choices = new List<CorreChoiceNode>(AccumulatedChoices);
+        AccumulatedChoices.Clear();
+        // 用场景级协程承载 ChoiceRoutine（不依赖 DialogCutscene实体，CustomNPC 场景也能弹出）
+        Entity runner = new();
+        runner.Add(new Coroutine(ChoiceRoutine(level, choices)));
+        Engine.Scene.Add(runner);
+        return true;
     }
 
-    // ==================== 收集：Textbox 构造时 ====================
-
     /// <summary>把对话中的 choice 节点在播放到对应位置时累积为选项。</summary>
+
     private static void AddChoiceEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
         Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
     {
@@ -351,87 +338,45 @@ public static class DialogChoices
         yield break;
     }
 
-    // ==================== 打断：过场结束前 ====================
-
-    /// <summary>从场景中找到当前正在收尾的 DialogCutscene 并执行打断判断。</summary>
-    private static bool FindCutsceneAndIntercept()
-    {
-        Celeste.Mod.Entities.DialogCutscene dc = null;
-        if (Engine.Scene != null)
-        {
-            foreach (var e in Engine.Scene.Entities)
-            {
-                if (e is Celeste.Mod.Entities.DialogCutscene d)
-                {
-                    dc = d;
-                    break;
-                }
-            }
-        }
-
-        return dc != null && InterceptCutscene(dc);
-    }
-    /// <summary>过场结束前统一决策：有待跳转则无缝衔接新过场，有累积选项则弹出，否则正常结束。</summary>
-    private static bool InterceptCutscene(Celeste.Mod.Entities.DialogCutscene dc)
-    {
-
-        // 1. 有 PendingJump → 无缝衔接新过场
-        if (!string.IsNullOrEmpty(PendingJump))
-        {
-            string target = PendingJump;
-            PendingJump = "";
-            var player = (Engine.Scene as Level)?.Tracker.GetEntity<Player>();
-            if (player != null)
-            {
-                // 移除旧 DialogCutscene（不触发 OnEnd 解锁——因为 InterceptCutscene 返回 true 跳过 EndCutscene 调用）
-                dc.RemoveSelf();
-                // Add 新 DialogCutscene（OnBegin 锁定玩家）
-                if (!Celeste.Mod.Entities.DialogCutscene.IsInProgress(target))
-                    Engine.Scene.Add(new Celeste.Mod.Entities.DialogCutscene(target, player, false));
-                return true;
-            }
-            return false;
-        }
-
-        // 2. 有累积 choice → 弹选项
-        if (AccumulatedChoices.Count == 0)
-        {
-            return false;
-        }
-        var choices = new List<CorreChoiceNode>(AccumulatedChoices);
-        AccumulatedChoices.Clear();
-        dc.Add(new Coroutine(ChoiceRoutine(dc, dc.Level, choices)));
-        return true;
-    }
     /// <summary>弹选项并等待玩家选择：选 target 无缝衔接新过场，选无 target 直接结束过场。</summary>
-    private static IEnumerator ChoiceRoutine(CutsceneEntity self, Level level, List<CorreChoiceNode> choices)
+    private static IEnumerator ChoiceRoutine(Level level, List<CorreChoiceNode> choices)
     {
         var contents = new string[choices.Count];
         for (int i = 0; i < choices.Count; i++)
             contents[i] = choices[i].Display;
 
+        // 重新锁定玩家：部分 NPC 过场在 EndCutscene 后还会调 OnTalkEnd 解锁玩家，
+        // choice 弹出前必须重新锁定，保证玩家处于过场状态不可操作。
+        // 注意：StateMachine.Locked=true 会阻止 State 赋值，所以必须先设 State 再 Locked。
+        var lockPlayer = level?.Tracker.GetEntity<Player>();
+        if (lockPlayer != null)
+        {
+            lockPlayer.StateMachine.State = 11;
+            lockPlayer.StateMachine.Locked = true;
+        }
+
         // 玩家处于过场锁定中，弹出选项
         yield return ChoicePrompt.Prompt(contents);
 
-        int idx = ChoicePrompt.Choice;
+        int idx = ChoicePrompt.Choice;
         if (idx >= 0 && idx < choices.Count)
         {
-            string target = choices[idx].Target;
+            string target = choices[idx].Target;
             if (!string.IsNullOrEmpty(target))
             {
-                // 选 target → 无缝衔接新过场（保持锁定），结束当前过场
+                // 选 target → 无缝衔接新过场（保持锁定），结束当前过场
                 var player = (Engine.Scene as Level)?.Tracker.GetEntity<Player>();
                 if (player != null)
                 {
                     Engine.Scene.Add(new Celeste.Mod.Entities.DialogCutscene(target, player, false));
-                    self.EndCutscene(level, true);
+                    level.EndCutscene();
                     yield break;
                 }
             }
         }
 
-        // 选无 target 或 player 缺失 → 正常结束过场
-        self.EndCutscene(level, true);
+        // 选无 target 或 player 缺失 → 正常结束过场
+        level.EndCutscene();
     }
 
     // ==================== 跳过过场 ====================
@@ -548,6 +493,19 @@ public class ChoicePrompt : BaseEntity
     public override void Update()
     {
         base.Update();
+
+        // 选择框显示期间持续锁定玩家：部分 NPC 过场（CustomNPC 等）在 EndCutscene 后
+        // 还会调 OnTalkEnd 解锁玩家，这里每帧重新锁定，保证选择时玩家不可操作。
+        // 注意：StateMachine.Locked=true 会阻止 State 赋值，所以必须先设 State 再 Locked。
+        if (Engine.Scene is Level level)
+        {
+            var p = level.Tracker.GetEntity<Player>();
+            if (p != null)
+            {
+                p.StateMachine.State = 11;
+                p.StateMachine.Locked = true;
+            }
+        }
 
         if (this.Confirmed)
         {

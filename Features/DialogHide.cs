@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Celeste;
+using Celeste.Mod.Entities;
 using CorreWithCare.Utils;
 using static CorreWithCare.Core.ExtendedAttributes;
 
@@ -25,7 +26,6 @@ public static class DialogHide
     {
         /// <summary>条件 flag 名（可选；空 = 无条件隐藏）。</summary>
         public readonly string Flag = "";
-
         public CorreHideNode(List<string> rawParams)
         {
             if (rawParams.Count >= 1)
