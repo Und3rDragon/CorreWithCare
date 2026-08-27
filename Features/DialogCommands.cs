@@ -25,7 +25,7 @@ namespace CorreWithCare.Features;
 /// C# 侧注册效果：
 ///   DialogCommands.Register("xxx", (player, level, param) => SomeRoutine(...));
 /// </summary>
-public static partial class DialogCommands
+public static class DialogCommands
 {
     /// <summary>指令前缀。Dialog 中所有 {corre_xxx} 形式的指令都会被框架捕获。</summary>
     public const string Prefix = "corre";
@@ -122,14 +122,14 @@ public static partial class DialogCommands
             cursor.Emit(OpCodes.Ldarg_0); // this (FancyText)
             cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[7]); // s
             cursor.Emit(OpCodes.Ldloc_S, il.Method.Body.Variables[8]); // stringList
-            cursor.EmitDelegate<Action<FancyText, string, List<string>>>(HandleParse);
+            cursor.EmitDelegate(HandleParse);
         }
     }
 
     /// <summary>
-    /// 统一指令分发：先交给 CustomParseHandler（外部模块），未处理则按 on_skip / 普通指令处理。
-    /// 同时支持闭合标签 {/corre_xxx}：`{/corre_hide}` 解析后 s="/corre_hide"，
-    /// 通过 cmd 传 "/xxx"（带前导斜杠）让外部模块识别为闭合。
+    /// 先交给 CustomParseHandler处理指令，未处理则按 on_skip 或者 普通指令处理。
+    /// 闭合标签 {/corre_xxx}{/corre_hide}解析，解析后 s="/corre_hide"，
+    /// 通过 cmd 传 "/xxx"（带前导斜杠）让CustomParseHandler识别为闭合。
     /// </summary>
     private static void HandleParse(FancyText text, string s, List<string> vals)
     {

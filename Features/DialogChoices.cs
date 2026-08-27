@@ -19,7 +19,8 @@ using static CorreWithCare.Core.ExtendedAttributes;
 namespace CorreWithCare.Features;
 
 /// <summary>
-/// 对话分支与跳转：{corre_choice display [target]}、{corre_jumpto target [flag]}。
+/// 对话分支与跳转：{corre_choice display [target]}
+/// {corre_jumpto target [flag]}。
 /// 通过 DialogCommands 框架的 CustomParseHandler 扩展点接入。
 /// </summary>
 public static class DialogChoices
@@ -28,7 +29,7 @@ public static class DialogChoices
     public const string ChoiceCmd = "choice";
 
     /// <summary>跳转指令名：{corre_jumpto target [restrictFlag]}</summary>
-    public const string JumpCmd = "jumpto";
+    public const string JumpToCmd = "jumpto";
 
     /// <summary>已收集但尚未消费的分支选项：dialogID → 选项列表。</summary>
     private static readonly Dictionary<string, List<CorreChoiceNode>> PendingChoices = new();
@@ -37,7 +38,7 @@ public static class DialogChoices
     private static readonly List<CorreChoiceNode> AccumulatedChoices = new();
 
     /// <summary>待跳转的目标 Dialog ID（jumpto 触发时标记，由 IL 钩子无缝衔接；空=无待跳转）。</summary>
-    private static string PendingJump = "";
+    private static string PendingTarget = "";
 
     private static Func<string, List<string>, List<FancyText.Node>, bool> _prevParseHandler;
 
@@ -67,7 +68,7 @@ public static class DialogChoices
     }
 
     /// <summary>跳转节点：{corre_jumpto target [restrictFlag]}。</summary>
-    public class CorreJumpNode : FancyText.Trigger
+    public class CorreJumpToNode : FancyText.Trigger
     {
         /// <summary>跳转目标的 Dialog ID。</summary>
         public readonly string Target = "";
@@ -75,11 +76,11 @@ public static class DialogChoices
         /// <summary>条件 flag 名（可选；非空时检测 flag 为 true 才跳转）。</summary>
         public readonly string RestrictFlag = "";
 
-        public CorreJumpNode(List<string> rawParams)
+        public CorreJumpToNode(List<string> rawParams)
         {
             if (rawParams.Count < 1)
             {
-                Prt.Warn($"[{DialogCommands.Prefix}_{JumpCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpCmd} target [restrictFlag]}}");
+                Prt.Warn($"[{DialogCommands.Prefix}_{JumpToCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpToCmd} target [restrictFlag]}}");
                 return;
             }
 
@@ -104,9 +105,9 @@ public static class DialogChoices
                 return true;
             }
 
-            if (cmd == JumpCmd)
+            if (cmd == JumpToCmd)
             {
-                nodes.Add(new CorreJumpNode(vals));
+                nodes.Add(new CorreJumpToNode(vals));
                 return true;
             }
 
@@ -114,7 +115,7 @@ public static class DialogChoices
         };
 
         On.Celeste.Textbox.ctor_string_Language_Func1Array += AddChoiceEvents;
-        On.Celeste.Textbox.ctor_string_Language_Func1Array += AddJumpEvents;
+        On.Celeste.Textbox.ctor_string_Language_Func1Array += AddJumpToEvents;
         On.Celeste.Level.SkipCutscene += ClearChoicesOnSkip;
 
         // On hook Level.EndCutscene（统一过场结束点）：DialogCutscene / CustomNPC / MoreCustomNPC 播完对话时都会调用
@@ -128,13 +129,13 @@ public static class DialogChoices
         _prevParseHandler = null;
 
         On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddChoiceEvents;
-        On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddJumpEvents;
+        On.Celeste.Textbox.ctor_string_Language_Func1Array -= AddJumpToEvents;
         On.Celeste.Level.SkipCutscene -= ClearChoicesOnSkip;
 
         On.Celeste.Level.EndCutscene -= LevelEndCutscene;
         PendingChoices.Clear();
         AccumulatedChoices.Clear();
-        PendingJump = "";
+        PendingTarget = "";
     }
 
     // ==================== 收集：Textbox 构造时 ====================
@@ -155,17 +156,17 @@ public static class DialogChoices
 
     /// <summary>
     /// 统一过场结束决策（通用：DialogCutscene / CustomNPC / MoreCustomNPC 播完对话时都会走到这里）：
-    ///   有 PendingJump → 无缝衔接新过场，返回 true（跳过解锁）
+    ///   有 PendingTarget → 无缝衔接新过场，返回 true（跳过解锁）
     ///   有累积 choice → 弹选项，返回 true（跳过解锁）
     ///   否则 → 返回 false（正常解锁）
     /// </summary>
     private static bool HandleEndCutscene(Level level)
     {
-        // 1. 有 PendingJump → 无缝衔接新过场
-        if (!string.IsNullOrEmpty(PendingJump))
+        // 1. 有 PendingTarget → 无缝衔接新过场
+        if (!string.IsNullOrEmpty(PendingTarget))
         {
-            string target = PendingJump;
-            PendingJump = "";
+            string target = PendingTarget;
+            PendingTarget = "";
             var player = level?.Tracker.GetEntity<Player>();
             if (player != null)
             {
@@ -183,9 +184,9 @@ public static class DialogChoices
 
         var choices = new List<CorreChoiceNode>(AccumulatedChoices);
         AccumulatedChoices.Clear();
-        // 用场景级协程承载 ChoiceRoutine（不依赖 DialogCutscene实体，CustomNPC 场景也能弹出）
+        // 用场景级协程承载 DisplayChoicesRoutine（不依赖 DialogCutscene实体，CustomNPC 场景也能弹出）
         Entity runner = new();
-        runner.Add(new Coroutine(ChoiceRoutine(level, choices)));
+        runner.Add(new Coroutine(DisplayChoicesRoutine(level, choices)));
         Engine.Scene.Add(runner);
         return true;
     }
@@ -221,7 +222,7 @@ public static class DialogChoices
             // 给 choice 节点设置 Index，Textbox 播放到该位置时触发累积
             ch.Index = baseCount + choiceEvents.Count;
             var copy = ch; // 避免闭包自引用
-            choiceEvents.Add(() => ChoiceCoroutine(copy));
+            choiceEvents.Add(() => AccumulateChoiceCoroutine(copy));
         }
 
         var newEvents = new Func<IEnumerator>[currentEvents.Length + choiceEvents.Count];
@@ -233,8 +234,8 @@ public static class DialogChoices
     }
 
     /// <summary>播放到 choice 位置时累积该选项到全局池（去重）。</summary>
-    private static IEnumerator ChoiceCoroutine(CorreChoiceNode choice)
-    {
+    private static IEnumerator AccumulateChoiceCoroutine(CorreChoiceNode choice)
+    {
         AccumulateChoice(choice);
         yield break;
     }
@@ -268,7 +269,7 @@ public static class DialogChoices
 
     // ==================== 跳转：jumpto events ====================
     /// <summary>把对话中的 jumpto 节点在播放到对应位置时标记待跳转。</summary>
-    private static void AddJumpEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
+    private static void AddJumpToEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
         Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
     {
         orig(self, dialog, language, events);
@@ -276,11 +277,11 @@ public static class DialogChoices
         var selfData = new DynamicData(self);
         var text = selfData.Get<FancyText.Text>("text");
 
-        var jumpNodes = new List<CorreJumpNode>();
+        var jumpNodes = new List<CorreJumpToNode>();
         foreach (var node in text.Nodes)
         {
-            if (node is CorreJumpNode jump)
-                jumpNodes.Add(jump);
+            if (node is CorreJumpToNode jumptoNode)
+                jumpNodes.Add(jumptoNode);
         }
 
         if (jumpNodes.Count == 0)
@@ -295,7 +296,7 @@ public static class DialogChoices
             var jump = jumpNodes[i];
             jump.Index = baseCount + jumpEvents.Count;
             var copy = jump; // 避免闭包自引用
-            jumpEvents.Add(() => JumpCoroutine(copy));
+            jumpEvents.Add(() => JumpToCoroutine(copy));
         }
 
         var newEvents = new Func<IEnumerator>[currentEvents.Length + jumpEvents.Count];
@@ -306,20 +307,23 @@ public static class DialogChoices
         selfData.Set("events", newEvents);
     }
     /// <summary>播放到 jumpto 时标记待跳转（检测可选 flag 后），由过场结束钩子无缝衔接。</summary>
-    private static IEnumerator JumpCoroutine(CorreJumpNode jump)
-    {
+    private static IEnumerator JumpToCoroutine(CorreJumpToNode jump)
+    {
+
         // 有 restrictFlag：仅当 flag 为 true 才跳转
         if (!string.IsNullOrEmpty(jump.RestrictFlag))
         {
             if (!jump.RestrictFlag.GetFlag())
-            {
+            {
+
                 yield break;
             }
         }
 
         if (string.IsNullOrEmpty(jump.Target))
-            yield break;
-        PendingJump = jump.Target;
+            yield break;
+
+        PendingTarget = jump.Target;
 
         // 关键：调用 Textbox.Close()（设 Opened=false），让 Textbox.Say 的 IEnumerator 返回，
         // 从而旧 Cutscene 协程走完 yield Textbox.Say → 走到 EndCutscene → IL 钩子无缝衔接。
@@ -339,7 +343,7 @@ public static class DialogChoices
     }
 
     /// <summary>弹选项并等待玩家选择：选 target 无缝衔接新过场，选无 target 直接结束过场。</summary>
-    private static IEnumerator ChoiceRoutine(Level level, List<CorreChoiceNode> choices)
+    private static IEnumerator DisplayChoicesRoutine(Level level, List<CorreChoiceNode> choices)
     {
         var contents = new string[choices.Count];
         for (int i = 0; i < choices.Count; i++)
@@ -376,6 +380,16 @@ public static class DialogChoices
         }
 
         // 选无 target 或 player 缺失 → 正常结束过场
+        // 关键：Level.EndCutscene() 只设 InCutscene=false，不恢复玩家 StateMachine。
+        // 原版 DialogCutscene 会由 OnEnd 恢复；但 CustomNPC 的 OnTalkEnd 已提前执行完，
+        // 所以这里必须手动恢复玩家 State。注意：恢复（解锁）顺序与锁定时相反——
+        // 必须先 Locked=false 再 State=0（否则 State 赋值会被 Locked 阻止，玩家卡在 StDummy）。
+        var unlockPlayer = level?.Tracker.GetEntity<Player>();
+        if (unlockPlayer != null)
+        {
+            unlockPlayer.StateMachine.Locked = false;
+            unlockPlayer.StateMachine.State = 0;
+        }
         level.EndCutscene();
     }
 
@@ -388,7 +402,7 @@ public static class DialogChoices
     {
         PendingChoices.Clear();
         AccumulatedChoices.Clear();
-        PendingJump = "";
+        PendingTarget = "";
         orig(self);
 
         foreach (var ui in self.Tracker.GetEntities<ChoicePrompt>())
