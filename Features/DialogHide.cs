@@ -90,6 +90,6 @@ public static class DialogHide
                 return;
             }
         }
-        Prt.Warn($"[{DialogCommands.Prefix}_{HideCmd}] 未找到匹配的 {DialogCommands.Prefix}_hide 开始标签");
+        Log.Warn($"[{DialogCommands.Prefix}_{HideCmd}] 未找到匹配的 {DialogCommands.Prefix}_hide 开始标签");
     }
 }

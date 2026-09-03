@@ -57,7 +57,7 @@ public static class DialogChoices
         {
             if (rawParams.Count < 1)
             {
-                Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] 指令缺少参数！Expected: {{{DialogCommands.Prefix}_{ChoiceCmd} display [target]}}");
+                Log.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] 指令缺少参数！Expected: {{{DialogCommands.Prefix}_{ChoiceCmd} display [target]}}");
                 return;
             }
 
@@ -80,7 +80,7 @@ public static class DialogChoices
         {
             if (rawParams.Count < 1)
             {
-                Prt.Warn($"[{DialogCommands.Prefix}_{JumpToCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpToCmd} target [restrictFlag]}}");
+                Log.Warn($"[{DialogCommands.Prefix}_{JumpToCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpToCmd} target [restrictFlag]}}");
                 return;
             }
 

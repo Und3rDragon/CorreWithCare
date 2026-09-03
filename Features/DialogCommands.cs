@@ -63,7 +63,7 @@ public static class DialogCommands
 
             if (rawParams.Count == 0)
             {
-                Prt.Warn($"Found empty {Prefix} trigger!");
+                Log.Warn($"Found empty {Prefix} trigger!");
             }
             else
             {
@@ -83,7 +83,7 @@ public static class DialogCommands
         {
             if (rawParams.Count == 0)
             {
-                Prt.Warn("CorreWithCare", $"Found empty {Prefix}_{OnSkip}!");
+                Log.Warn("CorreWithCare", $"Found empty {Prefix}_{OnSkip}!");
             }
             else
             {
