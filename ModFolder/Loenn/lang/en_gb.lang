@@ -7,3 +7,9 @@ entities.CorreWithCare/CustomCredits.placements.name.credits=Custom Credits
 ## Arbitrary Outline
 
 entities.CorreWithCare/ArbitraryOutline.placements.name.outline=Arbitrary Outline
+
+## Collectible Coin
+
+entities.CorreWithCare/CollectibleCoin.placements.name.coin=Collectible Coin
+entities.CorreWithCare/CollectibleCoin.placements.name.coin_with_return=Collectible Coin (With Return)
+entities.CorreWithCare/CollectibleCoinMarker.placements.name.marker=Collectible Coin Marker
