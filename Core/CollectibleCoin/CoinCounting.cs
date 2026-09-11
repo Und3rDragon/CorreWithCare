@@ -16,7 +16,7 @@ public static class CoinCounting
     /// 结算一次金币收集：先按地图集与标签累加存档计数，再刷新该地图集的会话计数器，
     /// 并通知显示层弹出对应的计数器。
     /// </summary>
-    public static void Collect(Player player, string tag, int value, Vector2 position)
+    public static void Collect(Player player, string tag, int value, vec2 position)
     {
         Level level = player?.SceneAs<Level>();
         if (level is null || string.IsNullOrEmpty(tag))

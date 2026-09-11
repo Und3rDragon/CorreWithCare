@@ -9,10 +9,10 @@ namespace CorreWithCare.Core;
 public class BaseEntity : Entity
 {
     public BaseEntity() : base() { }
-    public BaseEntity(EntityData data, Vector2 offset)
+    public BaseEntity(EntityData data, vec2 offset)
         : base(data.Position + offset)
     {
         Nodes = data.NodesWithPosition(offset);
     }
-    public Vector2[] Nodes;
+    public vec2[] Nodes;
 }

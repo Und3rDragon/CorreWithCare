@@ -8,10 +8,10 @@ namespace CorreWithCare.Core;
 
 public class BaseTrigger : Trigger
 {
-    public BaseTrigger(EntityData data, Vector2 offset)
+    public BaseTrigger(EntityData data, vec2 offset)
         : base(data, offset)
     {
         Nodes = data.NodesWithPosition(offset);
     }
-    public Vector2[] Nodes;
+    public vec2[] Nodes;
 }

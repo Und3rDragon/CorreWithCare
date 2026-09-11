@@ -332,7 +332,7 @@ public class CoinDisplay : Entity
             Y = Calc.Approach(Y, SlotY(), Engine.DeltaTime * 800f);
         }
 
-        private IEnumerator UpdateRoutine()
+        private ien UpdateRoutine()
         {
             // 等待入场完成
             while (_drawLerp < 1f)
@@ -364,12 +364,12 @@ public class CoinDisplay : Entity
         public override void Render()
         {
             float y = Y;
-            Vector2 from = new Vector2(-_owner.Background.Width, y);
-            Vector2 to = new Vector2(32f, y);
-            Vector2 pos = Vector2.Lerp(from, to, Ease.CubeOut(_drawLerp)).Round();
+            vec2 from = new vec2(-_owner.Background.Width, y);
+            vec2 to = new vec2(32f, y);
+            vec2 pos = vec2.Lerp(from, to, Ease.CubeOut(_drawLerp)).Round();
 
-            _owner.Background.DrawJustified(pos + new Vector2(-96f, 12f), new Vector2(0f, 0.5f));
-            _counter.Position = pos + new Vector2(0f, -y);
+            _owner.Background.DrawJustified(pos + new vec2(-96f, 12f), new vec2(0f, 0.5f));
+            _counter.Position = pos + new vec2(0f, -y);
             _counter.Render();
         }
     }

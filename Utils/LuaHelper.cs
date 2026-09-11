@@ -112,9 +112,9 @@ public static class LuaHelper
     // ==================== 协程支持 ====================
 
     /// <summary>
-    /// 将 Lua 协程转换为 C# IEnumerator
+    /// 将 Lua 协程转换为 C# ien
     /// </summary>
-    public static IEnumerator LuaCoroutineToIEnumerator(LuaFunction coroutineFunc)
+    public static ien LuaCoroutineToien(LuaFunction coroutineFunc)
     {
         if (coroutineFunc == null) yield break;
 
@@ -175,7 +175,7 @@ public static class LuaHelper
             {
                 yield return str;
             }
-            else if (current is IEnumerator enumerator)
+            else if (current is ien enumerator)
             {
                 yield return enumerator;
             }
@@ -187,9 +187,9 @@ public static class LuaHelper
     }
 
     /// <summary>
-    /// 将 Lua 协程封装为 IEnumerator
+    /// 将 Lua 协程封装为 ien
     /// </summary>
-    public static IEnumerator WrapCoroutine(LuaFunction coroutineFunc, params object[] args)
+    public static ien WrapCoroutine(LuaFunction coroutineFunc, params object[] args)
     {
         if (coroutineFunc == null) yield break;
 
@@ -252,7 +252,7 @@ public static class LuaHelper
                 }
             }
         }
-        else if (result != null && result.Length > 0 && result[0] is IEnumerator enumerator)
+        else if (result != null && result.Length > 0 && result[0] is ien enumerator)
         {
             yield return enumerator;
         }

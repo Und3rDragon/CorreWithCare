@@ -7,6 +7,7 @@ using CorreWithCare.Core;
 using CorreWithCare.Core.CollectibleCoin;
 using CorreWithCare.Utils;
 using Microsoft.Xna.Framework;
+using static CorreWithCare.Core.ExtendedAttributes;
 
 namespace CorreWithCare.Entities;
 
@@ -21,13 +22,14 @@ namespace CorreWithCare.Entities;
 /// </summary>
 [Tracked]
 [CustomEntity("CorreWithCare/CollectibleCoinMarker")]
+[WorkInProgress]
 public class CollectibleCoinMarker : BaseEntity
 {
     private readonly string coinTag;
     private readonly string icon;
     private readonly int id;
 
-    public CollectibleCoinMarker(EntityData data, Vector2 offset)
+    public CollectibleCoinMarker(EntityData data, vec2 offset)
         : base(data, offset)
     {
         coinTag = data.Attr("tag", "");

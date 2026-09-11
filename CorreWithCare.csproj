@@ -21,12 +21,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="ModFolder\Loenn\triggers\debugging\**" />
-      <EmbeddedResource Remove="ModFolder\Loenn\triggers\debugging\**" />
-      <None Remove="ModFolder\Loenn\triggers\debugging\**" />
-    </ItemGroup>
-
-    <ItemGroup>
       <!-- Earcut 改为纯 C# 的 Earcut.NET（mapbox/earcut 的 C# 移植，零依赖，无 FSharp.Core）。
            原 "<PackageReference Include='Earcut' ...>" 是 F# 实现，会拖带 FSharp.Core 并在 Code/ 里多一个无关 dll。 -->
       <PackageReference Include="Earcut.NET" Version="1.2.0" />
@@ -37,6 +31,10 @@
         <HintPath>$(CelesteRootPath)/NLua.dll</HintPath>
         <Private>false</Private>
       </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ModFolder\Loenn\wips\triggers\" />
     </ItemGroup>
 
 	<!--

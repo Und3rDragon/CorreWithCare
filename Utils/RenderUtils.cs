@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Numerics;
-using Vector2 = Microsoft.Xna.Framework.Vector2;
 using Vector3 = Microsoft.Xna.Framework.Vector3;
 using Vector4 = Microsoft.Xna.Framework.Vector4;
 
@@ -130,55 +129,55 @@ public static class RenderUtils
     public static float Snap(this float value, float snap) => Calc.Snap(value, snap);
     #endregion
 
-    #region Vector2 扩展
+    #region vec2 扩展
     /// <summary>获取向量角度（弧度）</summary>
-    public static float Angle(this Vector2 vector) => MathF.Atan2(vector.Y, vector.X);
+    public static float Angle(this vec2 vector) => MathF.Atan2(vector.Y, vector.X);
 
     /// <summary>向量乘以标量</summary>
-    public static Vector2 Mul(this Vector2 vector, float scalar) => vector * scalar;
+    public static vec2 Mul(this vec2 vector, float scalar) => vector * scalar;
 
     /// <summary>向量除以标量</summary>
-    public static Vector2 Div(this Vector2 vector, float scalar) => vector / scalar;
+    public static vec2 Div(this vec2 vector, float scalar) => vector / scalar;
 
     /// <summary>向量相加</summary>
-    public static Vector2 Add(this Vector2 vector, Vector2 other) => vector + other;
+    public static vec2 Add(this vec2 vector, vec2 other) => vector + other;
 
     /// <summary>向量相减</summary>
-    public static Vector2 Sub(this Vector2 vector, Vector2 other) => vector - other;
+    public static vec2 Sub(this vec2 vector, vec2 other) => vector - other;
 
     /// <summary>向量点积</summary>
-    public static float Dot(this Vector2 vector, Vector2 other) => Vector2.Dot(vector, other);
+    public static float Dot(this vec2 vector, vec2 other) => vec2.Dot(vector, other);
 
     /// <summary>向量叉积（2D标量）</summary>
-    public static float Cross(this Vector2 vector, Vector2 other) => vector.X * other.Y - vector.Y * other.X;
+    public static float Cross(this vec2 vector, vec2 other) => vector.X * other.Y - vector.Y * other.X;
 
     /// <summary>向量距离</summary>
-    public static float DistanceTo(this Vector2 from, Vector2 to) => Vector2.Distance(from, to);
+    public static float DistanceTo(this vec2 from, vec2 to) => vec2.Distance(from, to);
 
     /// <summary>向量平方距离</summary>
-    public static float DistanceSqTo(this Vector2 from, Vector2 to) => Vector2.DistanceSquared(from, to);
+    public static float DistanceSqTo(this vec2 from, vec2 to) => vec2.DistanceSquared(from, to);
 
     /// <summary>向量方向到目标</summary>
-    public static Vector2 DirectionTo(this Vector2 from, Vector2 to)
+    public static vec2 DirectionTo(this vec2 from, vec2 to)
     {
-        Vector2 dir = to - from;
-        if (dir.LengthSquared() < 0.0001f) return Vector2.Zero;
-        return Vector2.Normalize(dir);
+        vec2 dir = to - from;
+        if (dir.LengthSquared() < 0.0001f) return vec2.Zero;
+        return vec2.Normalize(dir);
     }
 
     /// <summary>旋转向量</summary>
-    public static Vector2 Rotate(this Vector2 vector, float angle)
+    public static vec2 Rotate(this vec2 vector, float angle)
     {
         float cos = MathF.Cos(angle);
         float sin = MathF.Sin(angle);
-        return new Vector2(
+        return new vec2(
             vector.X * cos - vector.Y * sin,
             vector.X * sin + vector.Y * cos
         );
     }
 
     /// <summary>向量转向目标方向（平滑转向）</summary>
-    public static Vector2 TurnTo(this Vector2 current, Vector2 target, float maxAngle)
+    public static vec2 TurnTo(this vec2 current, vec2 target, float maxAngle)
     {
         float currentAngle = current.Angle();
         float targetAngle = target.Angle();
@@ -186,17 +185,17 @@ public static class RenderUtils
         while (delta > MathHelper.Pi) delta -= MathHelper.TwoPi;
         while (delta < -MathHelper.Pi) delta += MathHelper.TwoPi;
         float newAngle = currentAngle + MathHelper.Clamp(delta, -maxAngle, maxAngle);
-        return new Vector2(MathF.Cos(newAngle), MathF.Sin(newAngle));
+        return new vec2(MathF.Cos(newAngle), MathF.Sin(newAngle));
     }
 
     /// <summary>判断向量是否为零</summary>
-    public static bool IsZero(this Vector2 vector) => vector.LengthSquared() < 0.0001f;
+    public static bool IsZero(this vec2 vector) => vector.LengthSquared() < 0.0001f;
 
     /// <summary>安全归一化（零向量返回零）</summary>
-    public static Vector2 SafeNormalize(this Vector2 vector)
+    public static vec2 SafeNormalize(this vec2 vector)
     {
         float len = vector.Length();
-        if (len < 0.0001f) return Vector2.Zero;
+        if (len < 0.0001f) return vec2.Zero;
         return vector / len;
     }
     #endregion

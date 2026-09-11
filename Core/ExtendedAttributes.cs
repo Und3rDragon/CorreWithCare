@@ -39,4 +39,10 @@ public static class ExtendedAttributes
     {
         public Note(params object[] info) { }
     }
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class WorkInProgress : Attribute
+    {
+        public WorkInProgress(params object[] info) { }
+    }
 }

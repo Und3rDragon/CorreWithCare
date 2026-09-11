@@ -33,8 +33,8 @@ public class CorreSystem
         On.Celeste.Level.Update -= OnLevelUpdate;
     }
 
-    public static IEnumerator OnLevelTransition(On.Celeste.Level.orig_TransitionRoutine orig, 
-        Level self, LevelData levelData, Vector2 dir)
+    public static ien OnLevelTransition(On.Celeste.Level.orig_TransitionRoutine orig, 
+        Level self, LevelData levelData, vec2 dir)
     {
         ResetPerRoom(self);
         ApplyGlobals(self);
@@ -71,7 +71,7 @@ public class CorreSystem
     }
     
     public static PlayerDeadBody OnPlayerDeath(On.Celeste.Player.orig_Die orig, 
-        Player self, Vector2 dir, bool eii, bool reg)
+        Player self, vec2 dir, bool eii, bool reg)
     {
         ResetPerDeath(self.SceneAs<Level>());
 

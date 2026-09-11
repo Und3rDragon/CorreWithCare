@@ -7,6 +7,7 @@ using CorreWithCare.Core;
 using CorreWithCare.Core.CollectibleCoin;
 using CorreWithCare.Utils;
 using Microsoft.Xna.Framework;
+using static CorreWithCare.Core.ExtendedAttributes;
 
 namespace CorreWithCare.Entities;
 
@@ -23,20 +24,21 @@ namespace CorreWithCare.Entities;
 /// </summary>
 [Tracked]
 [CustomEntity("CorreWithCare/CollectibleCoin")]
+[WorkInProgress]
 public class CollectibleCoin : Entity
 {
     private readonly string coinTag;
     private readonly int value;
     private readonly string sfx;
     private readonly bool persist;
-    private readonly Vector2[] nodes;
+    private readonly vec2[] nodes;
     private readonly EntityID entityID;
 
     private bool collected;
     private Sprite sprite;
     private BloomPoint bloom;
 
-    public CollectibleCoin(EntityData data, Vector2 offset, EntityID entityID)
+    public CollectibleCoin(EntityData data, vec2 offset, EntityID entityID)
         : this(data.Position + offset, data.NodesWithPosition(offset), entityID,
               data.Attr("tag", ""),
               data.Int("value", 1),
@@ -46,7 +48,7 @@ public class CollectibleCoin : Entity
     {
     }
 
-    public CollectibleCoin(Vector2 position, Vector2[] nodes, EntityID entityID,
+    public CollectibleCoin(vec2 position, vec2[] nodes, EntityID entityID,
         string tag, int value, string spriteName, string sfx, bool persist)
     {
         this.coinTag = tag ?? "";
@@ -111,7 +113,7 @@ public class CollectibleCoin : Entity
             player?.Add(new Coroutine(ReturnRoutine(player, nodes[2], nodes[1])));
     }
 
-    private static IEnumerator ReturnRoutine(Player player, Vector2 to, Vector2 from)
+    private static ien ReturnRoutine(Player player, vec2 to, vec2 from)
     {
         yield return 0.3f;
 
@@ -119,7 +121,7 @@ public class CollectibleCoin : Entity
         {
             Level level = player.SceneAs<Level>();
             Audio.Play("event:/game/general/cassette_bubblereturn",
-                level.Camera.Position + new Vector2(160f, 90f));
+                level.Camera.Position + new vec2(160f, 90f));
             player.StartCassetteFly(to, from);
         }
     }

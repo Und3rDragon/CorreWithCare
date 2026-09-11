@@ -197,20 +197,20 @@ public static class RandomUtils
         N = RandomDouble(min ?? 0, max ?? 1f, seed);
     }
 
-    public static Vector2[] GetRandomPoints(Vector2 a, Vector2 b, int count, int? seed = null)
+    public static vec2[] GetRandomPoints(vec2 a, vec2 b, int count, int? seed = null)
     {
         if((a - b).LengthSquared() < 0.01f) 
         { 
-            return RandomPick(new Vector2[] { a, b }, count, seed);
+            return RandomPick(new vec2[] { a, b }, count, seed);
         }
 
-        Vector2 p1 = new Vector2(float.Min(a.X, b.X), float.Min(a.Y, b.Y)),
-            p2 = new Vector2(float.Max(a.X, b.X), float.Max(a.Y, b.Y));
+        vec2 p1 = new vec2(float.Min(a.X, b.X), float.Min(a.Y, b.Y)),
+            p2 = new vec2(float.Max(a.X, b.X), float.Max(a.Y, b.Y));
 
-        Vector2[] points = new Vector2[count];
+        vec2[] points = new vec2[count];
         for(int i = 0; i < count; i++)
         {
-            Vector2 p = Vector2.Zero;
+            vec2 p = vec2.Zero;
             p.X = RandomFloat(p1.X, p2.X, seed);
             p.Y = RandomFloat(p1.Y, p2.Y, seed);
 
@@ -219,7 +219,7 @@ public static class RandomUtils
         return points;
     }
 
-    public static void GetRandomPoints(Vector2 a, Vector2 b, int count, out Vector2[] points, int? seed = null)
+    public static void GetRandomPoints(vec2 a, vec2 b, int count, out vec2[] points, int? seed = null)
     {
         points = GetRandomPoints(a, b, count, seed);
     }

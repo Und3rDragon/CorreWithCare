@@ -19,13 +19,13 @@ public static class TASHelper
     /// </summary>
     public struct TASInputFrame
     {
-        public Vector2 Aim;
+        public vec2 Aim;
         public bool Jump;
         public bool Dash;
         public bool Grab;
         public bool CrouchDash;
 
-        public TASInputFrame(Vector2 aim, bool jump, bool dash, bool grab, bool crouchDash)
+        public TASInputFrame(vec2 aim, bool jump, bool dash, bool grab, bool crouchDash)
         {
             Aim = aim;
             Jump = jump;
@@ -34,7 +34,7 @@ public static class TASHelper
             CrouchDash = crouchDash;
         }
 
-        public static readonly TASInputFrame Empty = new TASInputFrame(Vector2.Zero, false, false, false, false);
+        public static readonly TASInputFrame Empty = new TASInputFrame(vec2.Zero, false, false, false, false);
     }
 
     /// <summary>
@@ -348,12 +348,12 @@ public static class TASHelper
             }
         }
 
-        Vector2 aim = new(
+        vec2 aim = new(
             (right ? 1f : 0f) - (left ? 1f : 0f),
             (down ? 1f : 0f) - (up ? 1f : 0f)
         );
 
-        if (aim != Vector2.Zero)
+        if (aim != vec2.Zero)
             aim.Normalize();
 
         return new TASInputFrame(aim, jump, dash, grab, crouchDash);

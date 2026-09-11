@@ -21,7 +21,7 @@ public class ArbitraryOutline : BaseEntity
 
     private int _vertexLength;
 
-    public ArbitraryOutline(EntityData data, Vector2 offset) : base(data, offset)
+    public ArbitraryOutline(EntityData data, vec2 offset) : base(data, offset)
     {
         Nodes = data.NodesOffset(offset);
         color = data.GetCorreColor("color", Color.White);
@@ -29,7 +29,7 @@ public class ArbitraryOutline : BaseEntity
         outlineWidth = data.Float("outlineWidth", 2f);
         Depth = data.Int("depth");
 
-        objectVertices = GetFillVertsFromNodes(this, Vector2.Zero, color.Parsed());
+        objectVertices = GetFillVertsFromNodes(this, vec2.Zero, color.Parsed());
         verticesRelative = new List<Vector3>();
         _vertexLength = objectVertices.Length;
 
@@ -62,8 +62,8 @@ public class ArbitraryOutline : BaseEntity
             Color oc = outlineColor.Parsed();
             for (int i = 0; i < Nodes.Length; i++)
             {
-                Vector2 from = (i == 0) ? Position : Nodes[i - 1];
-                Vector2 to = Nodes[i];
+                vec2 from = (i == 0) ? Position : Nodes[i - 1];
+                vec2 to = Nodes[i];
                 Draw.Line(from, to, oc, outlineWidth);
             }
             // 最后一段闭合回起点
@@ -71,10 +71,10 @@ public class ArbitraryOutline : BaseEntity
         }
     }
 
-    public static VertexPositionColor[] GetFillVertsFromNodes(ArbitraryOutline entity, Vector2 offset, Color color)
+    public static VertexPositionColor[] GetFillVertsFromNodes(ArbitraryOutline entity, vec2 offset, Color color)
     {
         var nodes = entity.Nodes;
-        var input = new Vector2[nodes.Length + 1];
+        var input = new vec2[nodes.Length + 1];
 
         input[0] = entity.Position + offset;
         for (int i = 1; i < input.Length; i++)
@@ -83,7 +83,7 @@ public class ArbitraryOutline : BaseEntity
         }
 
         // using "earcut" library for triangulations
-        // transforming Vector2[] into float[]
+        // transforming vec2[] into float[]
         // because earcut requires flat arrays
         var flatVertices = new double[input.Length * 2];
         for (int i = 0; i < input.Length; i++)
