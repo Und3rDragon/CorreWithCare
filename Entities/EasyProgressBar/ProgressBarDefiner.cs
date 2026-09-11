@@ -29,8 +29,8 @@ public class ProgressBarDefiner : BaseEntity
                 Border = (data.Int("sessionBorder1",0),
                     data.Int("sessionBorder2",100)),
                 SizeX = data.Float("sizeX", cons.ScreenWidth * 0.8f),
-                FontScale = data.Vector2("fontSizeX", "fontSizeY", vec2.One * 2f).Abs(),
-                BarThickness = data.Float("barSize", 2f).ClampMin(1f),
+                FontScale = data.Vector2("fontSizeX", "fontSizeY", vec2.One).Abs(),
+                BarThickness = data.Float("barSize", 10f).ClampMin(1f),
                 FontColor = data.GetCorreColor("fontColor", ccolor.White),
                 BarColor = data.GetCorreColor("barColor", ccolor.White),
                 GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs()
@@ -59,8 +59,8 @@ public class ProgressBarDefiner : BaseEntity
                 Border = (data.Float("sessionBorder1", 0),
                     data.Float("sessionBorder2", 100)),
                 SizeX = data.Float("sizeX", cons.ScreenWidth * 0.8f),
-                FontScale = data.Vector2("fontSizeX", "fontSizeY", vec2.One * 2f).Abs(),
-                BarThickness = data.Float("barSize", 2f).ClampMin(1f),
+                FontScale = data.Vector2("fontSizeX", "fontSizeY", vec2.One).Abs(),
+                BarThickness = data.Float("barSize", 10f).ClampMin(1f),
                 FontColor = data.GetCorreColor("fontColor", ccolor.White),
                 BarColor = data.GetCorreColor("barColor", ccolor.White),
                 GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs()

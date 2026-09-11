@@ -17,8 +17,8 @@ public class CWCSession : EverestModuleSession
         public float SizeX = cons.ScreenWidth * 0.8f;
         public float TargetOffsetY = cons.ScreenHeight * 0.1f;
         public float MoveDuration = 1f;
-        public vec2 FontScale = vec2.One * 2f;
-        public float BarThickness = 2f;
+        public vec2 FontScale = vec2.One;
+        public float BarThickness = 10f;
         public ccolor FontColor = ccolor.White;
         public ccolor BarColor = ccolor.White;
         public vec2 GapSize = vec2.One * 10f;

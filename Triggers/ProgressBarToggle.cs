@@ -53,6 +53,7 @@ public class ProgressBarToggle : BaseTrigger
             {
                 Name = Name,
                 Counter = IsCounter,
+                State = ses.ProgressBarStates.Hidden
             };
 
             ProgressBar bar = new(data);

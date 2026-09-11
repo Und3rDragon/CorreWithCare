@@ -65,6 +65,13 @@ public class ProgressBar : BaseEntity
         routine = new(DisappearRoutine());
     }
 
+    public void AppearFor(float time)
+    {
+        if (data == null || bar == null || routine != null) { return; }
+
+        routine = new(AppearForRoutine(time));
+    }
+
     private ien AppearRoutine()
     {
         bar.State = ses.ProgressBarStates.Appearing;
@@ -115,6 +122,14 @@ public class ProgressBar : BaseEntity
         bar.State = ses.ProgressBarStates.Hidden;
     }
     
+    private ien AppearForRoutine(float time)
+    {
+        yield return AppearRoutine();
+        
+        yield return time;
+
+        yield return DisappearRoutine();
+    }
 
     private Coroutine routine;
     public override void Update()
@@ -155,19 +170,19 @@ public class ProgressBar : BaseEntity
             right = posX + size.X / 2f + data.GapSize.X;
 
         // start drawing basics
-        vec2 shift = vec2.UnitY * 2f;
+        vec2 shift = vec2.UnitY * 10f;
         if (barLeft < left)
         {
             vec2 leftLineStart = new(barLeft, bar.Y);
             vec2 leftLineEnd = new(left, bar.Y);
 
             // the upper one is the shadow
-            Draw.Line(leftLineStart, leftLineEnd, Color.Gray, data.BarThickness);
+            Draw.Line(leftLineStart, leftLineEnd, Color.Gray * data.BarColor.alpha, data.BarThickness);
             Draw.Line(leftLineStart - shift, leftLineEnd - shift, data.BarColor.Parsed(), data.BarThickness);
         }
 
         // the upper one is the shadow
-        ActiveFont.Draw(number, new(posX, bar.Y), vec2.One * 0.5f, data.FontScale, Color.Gray);
+        ActiveFont.Draw(number, new(posX, bar.Y), vec2.One * 0.5f, data.FontScale, Color.Gray * data.FontColor.alpha);
         ActiveFont.Draw(number, new vec2(posX, bar.Y) - shift, vec2.One * 0.5f, data.FontScale, data.FontColor.Parsed());
         
         if(right < barRight)
@@ -176,7 +191,7 @@ public class ProgressBar : BaseEntity
             vec2 rightLineEnd = new(barRight, bar.Y);
 
             // the upper one is the shadow
-            Draw.Line(rightLineStart, rightLineEnd, Color.Gray, data.BarThickness);
+            Draw.Line(rightLineStart, rightLineEnd, Color.Gray * data.BarColor.alpha, data.BarThickness);
             Draw.Line(rightLineStart - shift, rightLineEnd - shift, data.BarColor.Parsed(), data.BarThickness);
         }
     }
