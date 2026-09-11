@@ -33,7 +33,8 @@ public class ProgressBarDefiner : BaseEntity
                 BarThickness = data.Float("barSize", 10f).ClampMin(1f),
                 FontColor = data.GetCorreColor("fontColor", ccolor.White),
                 BarColor = data.GetCorreColor("barColor", ccolor.White),
-                GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs()
+                GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs(),
+                ShadowShift = data.Vector2("shadowShiftX", "shadowShiftY", vec2.UnitY * 10f)
             };
 
             int n = md.Session.ProgressBars.FindIndex(s => 
@@ -63,7 +64,8 @@ public class ProgressBarDefiner : BaseEntity
                 BarThickness = data.Float("barSize", 10f).ClampMin(1f),
                 FontColor = data.GetCorreColor("fontColor", ccolor.White),
                 BarColor = data.GetCorreColor("barColor", ccolor.White),
-                GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs()
+                GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs(),
+                ShadowShift = data.Vector2("shadowShiftX", "shadowShiftY", vec2.UnitY * 10f)
             };
 
             int n = md.Session.ProgressBars.FindIndex(s =>

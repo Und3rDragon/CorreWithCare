@@ -170,7 +170,7 @@ public class ProgressBar : BaseEntity
             right = posX + size.X / 2f + data.GapSize.X;
 
         // start drawing basics
-        vec2 shift = vec2.UnitY * 10f;
+        vec2 shift = data.ShadowShift;
         if (barLeft < left)
         {
             vec2 leftLineStart = new(barLeft, bar.Y);

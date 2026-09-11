@@ -16,11 +16,13 @@ public class ProgressBarToggle : BaseTrigger
         Toggle = data.Int("mode", Modes.Appear);
         Name = data.Attr("target", "default");
         IsCounter = data.Bool("isCounter", true);
+        ShowForDuration = data.Float("showFor", 1f);
     }
     public int Toggle;
     public string Name;
     public bool IsCounter;
     public float OffsetY;
+    public float ShowForDuration;
     public struct Modes 
     {
         public const int Show = 0;
@@ -71,9 +73,13 @@ public class ProgressBarToggle : BaseTrigger
             {
                 target.Appear();
             }
-            else
+            else if(Toggle == Modes.Disappear)
             {
                 target.Disappear();
+            }
+            else
+            {
+                target.AppearFor(ShowForDuration);
             }
         }
     }

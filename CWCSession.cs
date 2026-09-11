@@ -22,6 +22,7 @@ public class CWCSession : EverestModuleSession
         public ccolor FontColor = ccolor.White;
         public ccolor BarColor = ccolor.White;
         public vec2 GapSize = vec2.One * 10f;
+        public vec2 ShadowShift = vec2.UnitY * 10f;
         public class Counter : ProgressBarSettings
         {
             public (int, int) Border = (0, 100);

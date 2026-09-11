@@ -23,6 +23,8 @@ marker.placements = {
         barColor = "ffffffff",
         gapX = 10,
         gapY = 10,
+        shadowShiftX = 0,
+        shadowShiftY = 10,
     }
 }
 

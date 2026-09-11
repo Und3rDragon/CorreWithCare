@@ -13,3 +13,8 @@ entities.CorreWithCare/ArbitraryOutline.placements.name.outline=Arbitrary Outlin
 entities.CorreWithCare/CollectibleCoin.placements.name.coin=Collectible Coin
 entities.CorreWithCare/CollectibleCoin.placements.name.coin_with_return=Collectible Coin (With Return)
 entities.CorreWithCare/CollectibleCoinMarker.placements.name.marker=Collectible Coin Marker
+
+## Progress Bar
+
+triggers.CorreWithCare/ProgressBarToggle.placements.name.normal=Progress Bar Toggle
+entities.CorreWithCare/ProgressBarDefiner.placements.name.marker=Progress Bar Definer
