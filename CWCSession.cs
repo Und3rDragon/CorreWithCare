@@ -10,7 +10,7 @@ namespace CorreWithCare;
 
 public class CWCSession : EverestModuleSession
 {
-    public abstract class ProgressBarSettings
+    public class ProgressBarSettings
     {
         public string Name = "default";
         public bool FromTop = true;
