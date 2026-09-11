@@ -19,9 +19,6 @@ namespace CorreWithCare.Core.CollectibleCoin;
 [Tracked]
 public class CoinDisplay : Entity
 {
-    /// <summary>相邻两条计数条之间的行高。</summary>
-    public const float RowHeight = 64f;
-
     /// <summary>速度跑计时器显示时计数条需要额外下移的距离。</summary>
     public const float ChapterTimerOffset = 58f;
 
@@ -310,7 +307,7 @@ public class CoinDisplay : Entity
                 };
             }
 
-            return baseY + _slotIndex * RowHeight;
+            return baseY + _slotIndex * CWCModule.Settings.CorreCoinRowHeight;
         }
 
         public override void Update()

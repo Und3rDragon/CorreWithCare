@@ -1,0 +1,3 @@
+modoptions_CorreWithCare_CorreCoinMaxSlots=Collectible Coin Max Slots
+modoptions_CorreWithCare_CorreCoinDisplayerY=Collectible Coin Displayer Y
+modoptions_CorreWithCare_CorreCoinRowHeight=Collectible Coin Displayer Row Height
