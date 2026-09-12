@@ -24,7 +24,11 @@ marker.placements = {
         gapX = 10,
         gapY = 10,
         shadowShiftX = 0,
-        shadowShiftY = 10,
+        shadowShiftY = 8,
+        titleName = "",
+        titleScaleX = 1,
+        titleScaleY = 1,
+        titleColor = "ffffffff",
     }
 }
 
@@ -34,6 +38,10 @@ marker.fieldInformation = {
         useAlpha = true,
     },
     barColor = {
+        fieldType = "color",
+        useAlpha = true,
+    },
+    titleColor = {
         fieldType = "color",
         useAlpha = true,
     },

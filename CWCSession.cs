@@ -21,59 +21,37 @@ public class CWCSession : EverestModuleSession
         public float BarThickness = 10f;
         public ccolor FontColor = ccolor.White;
         public ccolor BarColor = ccolor.White;
+        /// <summary>
+        /// value Y is the gap between screen border and the main graphic
+        /// value X is the gap between the number and the bar lines
+        /// </summary>
         public vec2 GapSize = vec2.One * 10f;
-        public vec2 ShadowShift = vec2.UnitY * 10f;
-        public class Counter : ProgressBarSettings
+        /// <summary>
+        /// where the real pattern will be drawn above the shadows
+        /// </summary>
+        public vec2 ShadowShift = vec2.UnitY * 8f;
+        public string TitleName = string.Empty;
+        public vec2 TitleScale = vec2.One;
+        public ccolor TitleColor = ccolor.White;
+        public (float, float) Border = (0, 100);
+        public bool IsCounter = true;
+        public override bool Equals(object obj)
         {
-            public (int, int) Border = (0, 100);
-
-            public override bool Equals(object obj)
-            {
-                return obj is Counter counter &&
-                       Name == counter.Name;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(Name);
-            }
-
-            public float GetLerp(int value)
-            {
-                int min = RenderUtils.Min(Border.Item1, Border.Item2);
-                int max = RenderUtils.Max(Border.Item1, Border.Item2);
-
-                if(min == max || value > max) { return 1f; }
-                if(value < min) { return 0f; }
-
-                return (float)(value - min) / (max - min);
-            }
+            return obj is ProgressBarSettings set && set.Name == Name && set.IsCounter == IsCounter;
         }
-        public class Slider : ProgressBarSettings
+        public override int GetHashCode()
         {
-            public (float, float) Border = (0, 100);
+            return HashCode.Combine(Name, IsCounter);
+        }
+        public float GetLerp(float value)
+        {
+            float min = RenderUtils.Min(Border.Item1, Border.Item2);
+            float max = RenderUtils.Max(Border.Item1, Border.Item2);
 
-            public override bool Equals(object obj)
-            {
-                return obj is Slider slider &&
-                       Name == slider.Name;
-            }
+            if (min == max || value > max) { return 1f; }
+            if (value < min) { return 0f; }
 
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(Name);
-            }
-
-            public float GetLerp(float value)
-            {
-                float min = RenderUtils.Min(Border.Item1, Border.Item2);
-                float max = RenderUtils.Max(Border.Item1, Border.Item2);
-
-                if (min == max || value > max) { return 1f; }
-                if(value < min) { return 0f; }
-
-                return (value - min) / (max - min);
-            }
+            return (value - min) / (max - min);
         }
     }
     public List<ProgressBarSettings> ProgressBars = new();

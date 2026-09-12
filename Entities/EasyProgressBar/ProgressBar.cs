@@ -16,23 +16,31 @@ public class ProgressBar : BaseEntity
 
         Tag = Tags.HUD;
     }
+    public ProgressBar(ses.ProgressBarSettings setting)
+    {
+        data = setting;
+
+        TryGetSetting();
+
+        Tag = Tags.HUD;
+    }
     public ses.ProgressBarData bar;
     public ses.ProgressBarSettings data;
 
     private void TryGetData()
     {
         // fetch data
-        data = md.Session.ProgressBars.Find(set =>
-        {
-            if (bar.Counter)
-            {
-                return set is ses.ProgressBarSettings.Counter && set.Name == bar.Name;
-            }
-            else
-            {
-                return set is ses.ProgressBarSettings.Slider && set.Name == bar.Name;
-            }
-        });
+        data = md.Session.ProgressBars.Find(set => 
+        set.Name == bar.Name &&
+        set.IsCounter == bar.Counter);
+    }
+
+    public void TryGetSetting()
+    {
+        // fetch setting
+        bar = md.Session.ActiveProgressBars.Find(set =>
+            set.Name == data.Name &&
+            set.Counter == data.IsCounter);
     }
 
     private void Measure(out string number, out vec2 size)
@@ -48,7 +56,22 @@ public class ProgressBar : BaseEntity
     {
         base.Added(scene);
 
-        TryGetData();
+        if(data == null)
+        {
+            TryGetData();
+        }
+
+        if(bar == null)
+        {
+            TryGetSetting();
+        }
+    }
+
+    public override void Removed(Scene scene)
+    {
+        base.Removed(scene);
+
+        md.Session.ActiveProgressBars.Remove(bar);
     }
 
     public void Appear()
@@ -161,8 +184,8 @@ public class ProgressBar : BaseEntity
 
         // drawing calculations
         float lerp = bar.Counter ? 
-            (data as ses.ProgressBarSettings.Counter).GetLerp(bar.Name.GetCounter()) : 
-            (data as ses.ProgressBarSettings.Slider).GetLerp(bar.Name.GetSlider());
+            data.GetLerp(bar.Name.GetCounter()) : 
+            data.GetLerp(bar.Name.GetSlider());
         float barLeft = cons.ScreenWidth / 2f - data.SizeX / 2f,
             barRight = cons.ScreenWidth / 2f + data.SizeX / 2f;
         float posX = barLeft + data.SizeX * lerp;
@@ -193,6 +216,16 @@ public class ProgressBar : BaseEntity
             // the upper one is the shadow
             Draw.Line(rightLineStart, rightLineEnd, Color.Gray * data.BarColor.alpha, data.BarThickness);
             Draw.Line(rightLineStart - shift, rightLineEnd - shift, data.BarColor.Parsed(), data.BarThickness);
+        }
+
+        // draw title
+        if (data.TitleName.HasValidContent())
+        {
+            string title = Dialog.Clean(data.TitleName);
+            vec2 titleSize = ActiveFont.Measure(title) * data.TitleScale;
+            ActiveFont.DrawOutline(title, 
+                new vec2(cons.ScreenWidth / 2f, bar.Y - size.Y / 2f - data.GapSize.Y) - shift, 
+                vec2.One * 0.5f, data.TitleScale, data.TitleColor.Parsed(), 4f, Color.Black);
         }
     }
 }
