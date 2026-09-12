@@ -8,13 +8,34 @@ namespace CorreWithCare.Entities.EasyProgressBar;
 [WorkInProgress]
 public class ProgressBar : BaseEntity
 {
+    [Load]
+    public static void Load()
+    {
+        On.Celeste.Level.LoadLevel += OnLevelLoad;
+    }
+    [Unload]
+    public static void Unload()
+    {
+        On.Celeste.Level.LoadLevel -= OnLevelLoad;
+    }
+    public static void OnLevelLoad(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes intro, bool loader)
+    {
+        orig(self, intro, loader);
+
+        foreach(var i in md.Session.ActiveProgressBars)
+        {
+            Log.Info(i.Name, i.State, i.Counter, i.MovementTimer, i.Y);
+            ProgressBar bar = new ProgressBar(i);
+            self.Add(bar);
+        }
+    }
     public ProgressBar(ses.ProgressBarData data)
     {
         bar = data;
 
         TryGetData();
 
-        Tag = Tags.HUD;
+        Tag = Tags.HUD | Tags.TransitionUpdate;
     }
     public ProgressBar(ses.ProgressBarSettings setting)
     {
@@ -22,7 +43,7 @@ public class ProgressBar : BaseEntity
 
         TryGetSetting();
 
-        Tag = Tags.HUD;
+        Tag = Tags.HUD | Tags.TransitionUpdate;
     }
     public ses.ProgressBarData bar;
     public ses.ProgressBarSettings data;
@@ -65,13 +86,6 @@ public class ProgressBar : BaseEntity
         {
             TryGetSetting();
         }
-    }
-
-    public override void Removed(Scene scene)
-    {
-        base.Removed(scene);
-
-        md.Session.ActiveProgressBars.Remove(bar);
     }
 
     public void Appear()

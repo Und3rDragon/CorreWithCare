@@ -44,10 +44,14 @@ public class ProgressBarToggle : BaseTrigger
         {
             ses.ProgressBarData data = md.Session.ActiveProgressBars[n];
 
-            var bars = SceneAs<Level>().Tracker.GetEntities<ProgressBar>();
-
-            target = bars.Find(e =>
+            target = SceneAs<Level>().Tracker.GetEntities<ProgressBar>().Find(e =>
                 (e as ProgressBar).bar == data) as ProgressBar;
+
+            if(target == null)
+            {
+                target = new(data);
+                SceneAs<Level>().Add(target);
+            }
         }
         else
         {
