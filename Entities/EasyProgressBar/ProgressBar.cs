@@ -24,7 +24,6 @@ public class ProgressBar : BaseEntity
 
         foreach(var i in md.Session.ActiveProgressBars)
         {
-            Log.Info(i.Name, i.State, i.Counter, i.MovementTimer, i.Y);
             ProgressBar bar = new ProgressBar(i);
             self.Add(bar);
         }
