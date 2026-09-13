@@ -88,7 +88,7 @@ public static class NumberUtils
     public static T ToDegrees<T>(this T radians) where T : IFloatingPointIeee754<T> => radians * (T.CreateChecked(180) / T.CreateChecked(MathHelper.Pi));
 
     /// <summary>线性插值</summary>
-    public static float Lerp(this float from, float to, float amount) => MathHelper.Lerp(from, to, amount);
+    public static float Lerp(this float amount, float from, float to) => MathHelper.Lerp(from, to, amount);
 
     /// <summary>
     /// 通用线性插值：以小数 amount 在 from 与 to 之间取值。

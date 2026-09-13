@@ -122,7 +122,7 @@ public class ProgressBar : BaseEntity
         {
             bar.MovementTimer = bar.MovementTimer.Approach(data.MoveDuration, Engine.DeltaTime);
             lerp = bar.MovementTimer / data.MoveDuration;
-
+            
             bar.Y = Ease.SineInOut(lerp).Lerp(start, target);
 
             yield return null;
