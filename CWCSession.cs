@@ -45,8 +45,8 @@ public class CWCSession : EverestModuleSession
         }
         public float GetLerp(float value)
         {
-            float min = RenderUtils.Min(Border.Item1, Border.Item2);
-            float max = RenderUtils.Max(Border.Item1, Border.Item2);
+            float min = NumberUtils.Min(Border.Item1, Border.Item2);
+            float max = NumberUtils.Max(Border.Item1, Border.Item2);
 
             if (min == max || value > max) { return 1f; }
             if (value < min) { return 0f; }

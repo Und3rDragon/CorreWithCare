@@ -5,7 +5,7 @@ public static class EaseUtils
     /// <summary>
     /// 存储每个 Ease.Easer 对应的整数索引（从 0 开始），便于 EntityData 等按 int 配置缓动。
     /// </summary>
-    public struct Easers
+    public struct EaseWrapper
     {
         public const int Linear = 0;
         public const int SineIn = 1;
@@ -38,91 +38,91 @@ public static class EaseUtils
 
         public int Value;
 
-        public Easers(int value)
+        public EaseWrapper(int value)
         {
             Value = value;
         }
 
-        public static implicit operator Easers(int value) => new(value);
-        public static implicit operator int(Easers ease) => ease.Value;
+        public static implicit operator EaseWrapper(int value) => new(value);
+        public static implicit operator int(EaseWrapper ease) => ease.Value;
 
         /// <summary>
         /// Easers → Ease.Easer：按索引取缓动函数。
         /// </summary>
-        public static implicit operator Monocle.Ease.Easer(Easers ease) => EaseUtils.GetEase(ease);
+        public static implicit operator Monocle.Ease.Easer(EaseWrapper ease) => EaseUtils.GetEase(ease);
 
         /// <summary>
         /// Ease.Easer → Easers：反向查找对应的索引；未知缓动回退 Linear。
         /// </summary>
-        public static implicit operator Easers(Monocle.Ease.Easer easer)
+        public static implicit operator EaseWrapper(Monocle.Ease.Easer easer)
         {
-            if (easer == Monocle.Ease.Linear) return Easers.Linear;
-            if (easer == Monocle.Ease.SineIn) return Easers.SineIn;
-            if (easer == Monocle.Ease.SineOut) return Easers.SineOut;
-            if (easer == Monocle.Ease.SineInOut) return Easers.SineInOut;
-            if (easer == Monocle.Ease.QuadIn) return Easers.QuadIn;
-            if (easer == Monocle.Ease.QuadOut) return Easers.QuadOut;
-            if (easer == Monocle.Ease.QuadInOut) return Easers.QuadInOut;
-            if (easer == Monocle.Ease.CubeIn) return Easers.CubeIn;
-            if (easer == Monocle.Ease.CubeOut) return Easers.CubeOut;
-            if (easer == Monocle.Ease.CubeInOut) return Easers.CubeInOut;
-            if (easer == Monocle.Ease.QuintIn) return Easers.QuintIn;
-            if (easer == Monocle.Ease.QuintOut) return Easers.QuintOut;
-            if (easer == Monocle.Ease.QuintInOut) return Easers.QuintInOut;
-            if (easer == Monocle.Ease.ExpoIn) return Easers.ExpoIn;
-            if (easer == Monocle.Ease.ExpoOut) return Easers.ExpoOut;
-            if (easer == Monocle.Ease.ExpoInOut) return Easers.ExpoInOut;
-            if (easer == Monocle.Ease.BackIn) return Easers.BackIn;
-            if (easer == Monocle.Ease.BackOut) return Easers.BackOut;
-            if (easer == Monocle.Ease.BackInOut) return Easers.BackInOut;
-            if (easer == Monocle.Ease.BigBackIn) return Easers.BigBackIn;
-            if (easer == Monocle.Ease.BigBackOut) return Easers.BigBackOut;
-            if (easer == Monocle.Ease.BigBackInOut) return Easers.BigBackInOut;
-            if (easer == Monocle.Ease.ElasticIn) return Easers.ElasticIn;
-            if (easer == Monocle.Ease.ElasticOut) return Easers.ElasticOut;
-            if (easer == Monocle.Ease.ElasticInOut) return Easers.ElasticInOut;
-            if (easer == Monocle.Ease.BounceIn) return Easers.BounceIn;
-            if (easer == Monocle.Ease.BounceOut) return Easers.BounceOut;
-            if (easer == Monocle.Ease.BounceInOut) return Easers.BounceInOut;
-            return Easers.Linear;
+            if (easer == Monocle.Ease.Linear) return EaseWrapper.Linear;
+            if (easer == Monocle.Ease.SineIn) return EaseWrapper.SineIn;
+            if (easer == Monocle.Ease.SineOut) return EaseWrapper.SineOut;
+            if (easer == Monocle.Ease.SineInOut) return EaseWrapper.SineInOut;
+            if (easer == Monocle.Ease.QuadIn) return EaseWrapper.QuadIn;
+            if (easer == Monocle.Ease.QuadOut) return EaseWrapper.QuadOut;
+            if (easer == Monocle.Ease.QuadInOut) return EaseWrapper.QuadInOut;
+            if (easer == Monocle.Ease.CubeIn) return EaseWrapper.CubeIn;
+            if (easer == Monocle.Ease.CubeOut) return EaseWrapper.CubeOut;
+            if (easer == Monocle.Ease.CubeInOut) return EaseWrapper.CubeInOut;
+            if (easer == Monocle.Ease.QuintIn) return EaseWrapper.QuintIn;
+            if (easer == Monocle.Ease.QuintOut) return EaseWrapper.QuintOut;
+            if (easer == Monocle.Ease.QuintInOut) return EaseWrapper.QuintInOut;
+            if (easer == Monocle.Ease.ExpoIn) return EaseWrapper.ExpoIn;
+            if (easer == Monocle.Ease.ExpoOut) return EaseWrapper.ExpoOut;
+            if (easer == Monocle.Ease.ExpoInOut) return EaseWrapper.ExpoInOut;
+            if (easer == Monocle.Ease.BackIn) return EaseWrapper.BackIn;
+            if (easer == Monocle.Ease.BackOut) return EaseWrapper.BackOut;
+            if (easer == Monocle.Ease.BackInOut) return EaseWrapper.BackInOut;
+            if (easer == Monocle.Ease.BigBackIn) return EaseWrapper.BigBackIn;
+            if (easer == Monocle.Ease.BigBackOut) return EaseWrapper.BigBackOut;
+            if (easer == Monocle.Ease.BigBackInOut) return EaseWrapper.BigBackInOut;
+            if (easer == Monocle.Ease.ElasticIn) return EaseWrapper.ElasticIn;
+            if (easer == Monocle.Ease.ElasticOut) return EaseWrapper.ElasticOut;
+            if (easer == Monocle.Ease.ElasticInOut) return EaseWrapper.ElasticInOut;
+            if (easer == Monocle.Ease.BounceIn) return EaseWrapper.BounceIn;
+            if (easer == Monocle.Ease.BounceOut) return EaseWrapper.BounceOut;
+            if (easer == Monocle.Ease.BounceInOut) return EaseWrapper.BounceInOut;
+            return EaseWrapper.Linear;
         }
     }
 
     /// <summary>
     /// 根据 Easers 索引返回对应的 Ease.Easer；越界时回退为 Ease.Linear。
     /// </summary>
-    public static Monocle.Ease.Easer GetEase(Easers ease)
+    public static Monocle.Ease.Easer GetEase(EaseWrapper ease)
     {
         return ease.Value switch
         {
-            Easers.Linear => Monocle.Ease.Linear,
-            Easers.SineIn => Monocle.Ease.SineIn,
-            Easers.SineOut => Monocle.Ease.SineOut,
-            Easers.SineInOut => Monocle.Ease.SineInOut,
-            Easers.QuadIn => Monocle.Ease.QuadIn,
-            Easers.QuadOut => Monocle.Ease.QuadOut,
-            Easers.QuadInOut => Monocle.Ease.QuadInOut,
-            Easers.CubeIn => Monocle.Ease.CubeIn,
-            Easers.CubeOut => Monocle.Ease.CubeOut,
-            Easers.CubeInOut => Monocle.Ease.CubeInOut,
-            Easers.QuintIn => Monocle.Ease.QuintIn,
-            Easers.QuintOut => Monocle.Ease.QuintOut,
-            Easers.QuintInOut => Monocle.Ease.QuintInOut,
-            Easers.ExpoIn => Monocle.Ease.ExpoIn,
-            Easers.ExpoOut => Monocle.Ease.ExpoOut,
-            Easers.ExpoInOut => Monocle.Ease.ExpoInOut,
-            Easers.BackIn => Monocle.Ease.BackIn,
-            Easers.BackOut => Monocle.Ease.BackOut,
-            Easers.BackInOut => Monocle.Ease.BackInOut,
-            Easers.BigBackIn => Monocle.Ease.BigBackIn,
-            Easers.BigBackOut => Monocle.Ease.BigBackOut,
-            Easers.BigBackInOut => Monocle.Ease.BigBackInOut,
-            Easers.ElasticIn => Monocle.Ease.ElasticIn,
-            Easers.ElasticOut => Monocle.Ease.ElasticOut,
-            Easers.ElasticInOut => Monocle.Ease.ElasticInOut,
-            Easers.BounceIn => Monocle.Ease.BounceIn,
-            Easers.BounceOut => Monocle.Ease.BounceOut,
-            Easers.BounceInOut => Monocle.Ease.BounceInOut,
+            EaseWrapper.Linear => Monocle.Ease.Linear,
+            EaseWrapper.SineIn => Monocle.Ease.SineIn,
+            EaseWrapper.SineOut => Monocle.Ease.SineOut,
+            EaseWrapper.SineInOut => Monocle.Ease.SineInOut,
+            EaseWrapper.QuadIn => Monocle.Ease.QuadIn,
+            EaseWrapper.QuadOut => Monocle.Ease.QuadOut,
+            EaseWrapper.QuadInOut => Monocle.Ease.QuadInOut,
+            EaseWrapper.CubeIn => Monocle.Ease.CubeIn,
+            EaseWrapper.CubeOut => Monocle.Ease.CubeOut,
+            EaseWrapper.CubeInOut => Monocle.Ease.CubeInOut,
+            EaseWrapper.QuintIn => Monocle.Ease.QuintIn,
+            EaseWrapper.QuintOut => Monocle.Ease.QuintOut,
+            EaseWrapper.QuintInOut => Monocle.Ease.QuintInOut,
+            EaseWrapper.ExpoIn => Monocle.Ease.ExpoIn,
+            EaseWrapper.ExpoOut => Monocle.Ease.ExpoOut,
+            EaseWrapper.ExpoInOut => Monocle.Ease.ExpoInOut,
+            EaseWrapper.BackIn => Monocle.Ease.BackIn,
+            EaseWrapper.BackOut => Monocle.Ease.BackOut,
+            EaseWrapper.BackInOut => Monocle.Ease.BackInOut,
+            EaseWrapper.BigBackIn => Monocle.Ease.BigBackIn,
+            EaseWrapper.BigBackOut => Monocle.Ease.BigBackOut,
+            EaseWrapper.BigBackInOut => Monocle.Ease.BigBackInOut,
+            EaseWrapper.ElasticIn => Monocle.Ease.ElasticIn,
+            EaseWrapper.ElasticOut => Monocle.Ease.ElasticOut,
+            EaseWrapper.ElasticInOut => Monocle.Ease.ElasticInOut,
+            EaseWrapper.BounceIn => Monocle.Ease.BounceIn,
+            EaseWrapper.BounceOut => Monocle.Ease.BounceOut,
+            EaseWrapper.BounceInOut => Monocle.Ease.BounceInOut,
             _ => Monocle.Ease.Linear,
         };
     }

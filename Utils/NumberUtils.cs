@@ -5,7 +5,7 @@ using Vector4 = Microsoft.Xna.Framework.Vector4;
 
 namespace CorreWithCare.Utils;
 
-public static class RenderUtils
+public static class NumberUtils
 {
     #region 常量
     public const float Pi = MathHelper.Pi;
@@ -88,8 +88,19 @@ public static class RenderUtils
     public static T ToDegrees<T>(this T radians) where T : IFloatingPointIeee754<T> => radians * (T.CreateChecked(180) / T.CreateChecked(MathHelper.Pi));
 
     /// <summary>线性插值</summary>
-    public static T Lerp<T>(this T from, T to, T amount) where T : IFloatingPointIeee754<T>
-        => from + (to - from) * amount;
+    public static float Lerp(this float from, float to, float amount) => MathHelper.Lerp(from, to, amount);
+
+    /// <summary>
+    /// 通用线性插值：以小数 amount 在 from 与 to 之间取值。
+    /// 端点支持任意数字类型（含整数，整数端点按不连续取值）。
+    /// </summary>
+    public static T Lerp<T, U>(this U amount, T from, T to)
+        where T : INumber<T>
+        where U : IFloatingPoint<U>
+    {
+        T t = T.CreateChecked(amount);
+        return from + (to - from) * t;
+    }
 
     /// <summary>逼近目标值（不超过最大增量）</summary>
     public static T Approach<T>(this T value, T target, T maxDelta) where T : INumber<T>
@@ -298,22 +309,5 @@ public static class RenderUtils
     {
         return s.TryParse<T>(out T value) ? value : defaultValue;
     }
-    #endregion
-
-    #region 额外静态方法
-    /// <summary>反正切 (y/x)</summary>
-    public static float Atan2(this float y, float x) => MathF.Atan2(y, x);
-
-    /// <summary>角度转弧度（float 版本）</summary>
-    public static float ToRadians(this float degrees) => MathHelper.ToRadians(degrees);
-
-    /// <summary>弧度转角度（float 版本）</summary>
-    public static float ToDegrees(this float radians) => MathHelper.ToDegrees(radians);
-
-    /// <summary>线性插值（float 版本）</summary>
-    public static float Lerp(this float from, float to, float amount) => MathHelper.Lerp(from, to, amount);
-
-    /// <summary>平滑插值（float 版本）</summary>
-    public static float SmoothStep(this float from, float to, float amount) => MathHelper.SmoothStep(from, to, amount);
     #endregion
 }
