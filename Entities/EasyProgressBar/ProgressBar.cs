@@ -19,7 +19,7 @@ public class ProgressBar : BaseEntity
 
         EnsureData();
 
-        Tag = Tags.HUD | Tags.TransitionUpdate;
+        Tag = Tags.HUD | Tags.TransitionUpdate | Tags.Persistent;
     }
     public ProgressBar(ProgressBarSettings setting)
     {
@@ -27,7 +27,7 @@ public class ProgressBar : BaseEntity
 
         EnsureSetting();
 
-        Tag = Tags.HUD | Tags.TransitionUpdate;
+        Tag = Tags.HUD | Tags.TransitionUpdate | Tags.Persistent;
     }
     public ProgressBarData Data;
     public ProgressBarSettings Setting;
