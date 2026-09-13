@@ -3,19 +3,19 @@ local directory = require("mods").requireFromPlugin("utils.directory")
 
 local marker = {}
 
-marker.name = "CorreWithCare/ProgressBarDefiner"
+marker.name = "CorreWithCare/VerticalProgressBarDefiner"
 
 marker.placements = {
     name = "marker",
     data = {
         isCounter = true,
         sessionName = "default",
-        fromTop = true,
+        fromLeft = true,
         moveDuration = 1,
-        targetOffsetY = 108,
+        targetOffsetX = 192,
         sessionBorder1 = 0,
         sessionBorder2 = 100,
-        sizeX = 1536,
+        sizeY = 864,
         fontSizeX = 1,
         fontSizeY = 1,
         barSize = 10,
@@ -30,6 +30,7 @@ marker.placements = {
         titleScaleY = 1,
         titleColor = "ffffffff",
         flag = "",
+        titleOnBottom = true,
     }
 }
 

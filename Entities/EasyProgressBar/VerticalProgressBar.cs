@@ -2,14 +2,15 @@
 using CorreWithCare.Utils;
 using CorreWithCare.Core.ProgressBar;
 using static CorreWithCare.Core.ExtendedAttributes;
+using Mono.Cecil.Cil;
 
 namespace CorreWithCare.Entities.EasyProgressBar;
 
 [Tracked]
 [WorkInProgress]
-public class ProgressBar : BaseEntity
+public class VerticalProgressBar : BaseEntity
 {
-    public ProgressBar(ProgressBarData data)
+    public VerticalProgressBar(VerticalProgressBarData data)
     {
         Data = data;
 
@@ -17,7 +18,7 @@ public class ProgressBar : BaseEntity
 
         Tag = Tags.HUD | Tags.TransitionUpdate;
     }
-    public ProgressBar(ProgressBarSettings setting)
+    public VerticalProgressBar(VerticalProgressBarSettings setting)
     {
         Setting = setting;
 
@@ -25,13 +26,13 @@ public class ProgressBar : BaseEntity
 
         Tag = Tags.HUD | Tags.TransitionUpdate;
     }
-    public ProgressBarData Data;
-    public ProgressBarSettings Setting;
+    public VerticalProgressBarData Data;
+    public VerticalProgressBarSettings Setting;
 
     private void EnsureData()
     {
         // fetch data
-        Setting = md.Session.ProgressBars.Find(set =>
+        Setting = md.Session.VerticalProgressBars.Find(set =>
         set.Name == Data.Name &&
         set.IsCounter == Data.Counter);
 
@@ -40,7 +41,7 @@ public class ProgressBar : BaseEntity
             Setting = new()
             {
                 Name = Data.Name,
-                IsCounter = Data.Counter,
+                IsCounter = Data.Counter
             };
         }
     }
@@ -48,7 +49,7 @@ public class ProgressBar : BaseEntity
     public void EnsureSetting()
     {
         // fetch setting
-        Data = md.Session.ActiveProgressBars.Find(set =>
+        Data = md.Session.ActiveVerticalProgressBars.Find(set =>
             set.Name == Setting.Name &&
             set.Counter == Setting.IsCounter);
 
@@ -125,8 +126,8 @@ public class ProgressBar : BaseEntity
     {
         Data.State = ProgressBarStates.Appearing;
 
-        float start = Data.Y;
-        float target = Setting.TargetOffsetY;
+        float start = Data.X;
+        float target = Setting.TargetOffsetX;
 
         Data.MovementTimer = 0f;
         float lerp = 0f;
@@ -136,7 +137,7 @@ public class ProgressBar : BaseEntity
             Data.MovementTimer = Data.MovementTimer.Approach(Setting.MoveDuration, Engine.DeltaTime);
             lerp = Data.MovementTimer / Setting.MoveDuration;
 
-            Data.Y = Ease.SineInOut(lerp).Lerp(start, target);
+            Data.X = Ease.SineInOut(lerp).Lerp(start, target);
 
             yield return null;
         }
@@ -154,10 +155,12 @@ public class ProgressBar : BaseEntity
 
         bool getTitle = TryMeasureTitleFont(out string title, out vec2 titleSize);
 
-        float start = Data.Y;
-        float target = Setting.FromTop ?
-                -size.Y / 2f - Setting.GapSize.Y :
-                cons.ScreenHeight + size.Y / 2f + Setting.GapSize.Y + (getTitle ? titleSize.Y : 0);
+        float maxSizeX = getTitle ? NumberUtils.Max(size.X / 2f, titleSize.X / 2f) : size.X / 2f;
+
+        float start = Data.X;
+        float target = Setting.FromLeft ?
+                -maxSizeX - Setting.GapSize.X :
+                cons.ScreenWidth + maxSizeX + Setting.GapSize.X;
 
         Data.MovementTimer = 0f;
         float lerp = 0f;
@@ -167,7 +170,7 @@ public class ProgressBar : BaseEntity
             Data.MovementTimer = Data.MovementTimer.Approach(Setting.MoveDuration, Engine.DeltaTime);
             lerp = Data.MovementTimer / Setting.MoveDuration;
 
-            Data.Y = Ease.SineInOut(lerp).Lerp(start, target);
+            Data.X = Ease.SineInOut(lerp).Lerp(start, target);
 
             yield return null;
         }
@@ -223,7 +226,7 @@ public class ProgressBar : BaseEntity
         // ensure state continues
         if (Data.State == ProgressBarStates.Display)
         {
-            Data.Y = Setting.TargetOffsetY;
+            Data.X = Setting.TargetOffsetX;
         }
         else if(Data.State == ProgressBarStates.Appearing)
         {
@@ -236,42 +239,44 @@ public class ProgressBar : BaseEntity
         else
         {
             // by default the bar should be hidden
-            float target = Setting.FromTop ?
-                -size.Y / 2f - Setting.GapSize.Y :
-                cons.ScreenHeight + size.Y / 2f + Setting.GapSize.Y + (getTitle ? titleSize.Y : 0);
-            Data.Y = target;
+            float maxSizeX = getTitle ? NumberUtils.Max(size.X / 2f, titleSize.X / 2f) : size.X / 2f;
+
+            float target = Setting.FromLeft ?
+                -maxSizeX - Setting.GapSize.X :
+                cons.ScreenWidth + maxSizeX + Setting.GapSize.X;
+            Data.X = target;
         }
 
         // drawing calculations
         float lerp = Data.Counter ? 
             Setting.GetLerp(Data.Name.GetCounter()) : 
             Setting.GetLerp(Data.Name.GetSlider());
-        float barLeft = cons.ScreenWidth / 2f - Setting.SizeX / 2f,
-            barRight = cons.ScreenWidth / 2f + Setting.SizeX / 2f;
-        float posX = barLeft + Setting.SizeX * lerp;
-        float left = posX - size.X / 2f - Setting.GapSize.X,
-            right = posX + size.X / 2f + Setting.GapSize.X;
+        float barBottom = cons.ScreenHeight / 2f + Setting.SizeY / 2f,
+            barTop = cons.ScreenHeight / 2f - Setting.SizeY / 2f;
+        float posY = barBottom - Setting.SizeY * lerp;
+        float top = posY - size.Y / 2f - Setting.GapSize.Y,
+            bottom = posY + size.Y / 2f + Setting.GapSize.Y;
 
         // start drawing basics
         vec2 shift = Setting.ShadowShift;
-        if (barLeft < left)
+        if (barBottom > bottom)
         {
-            vec2 leftLineStart = new(barLeft, Data.Y);
-            vec2 leftLineEnd = new(left, Data.Y);
+            vec2 bottomLineStart = new(Data.X, barBottom);
+            vec2 bottomLineEnd = new(Data.X, bottom);
 
             // the upper one is the shadow
-            Draw.Line(leftLineStart, leftLineEnd, Color.Gray * Setting.BarColor.alpha, Setting.BarThickness);
-            Draw.Line(leftLineStart - shift, leftLineEnd - shift, Setting.BarColor.Parsed(), Setting.BarThickness);
+            Draw.Line(bottomLineStart, bottomLineEnd, Color.Gray * Setting.BarColor.alpha, Setting.BarThickness);
+            Draw.Line(bottomLineStart - shift, bottomLineEnd - shift, Setting.BarColor.Parsed(), Setting.BarThickness);
         }
 
         // the upper one is the shadow
-        ActiveFont.Draw(number, new(posX, Data.Y), vec2.One * 0.5f, Setting.FontScale, Color.Gray * Setting.FontColor.alpha);
-        ActiveFont.Draw(number, new vec2(posX, Data.Y) - shift, vec2.One * 0.5f, Setting.FontScale, Setting.FontColor.Parsed());
+        ActiveFont.Draw(number, new(Data.X, posY), vec2.One * 0.5f, Setting.FontScale, Color.Gray * Setting.FontColor.alpha);
+        ActiveFont.Draw(number, new vec2(Data.X, posY) - shift, vec2.One * 0.5f, Setting.FontScale, Setting.FontColor.Parsed());
         
-        if(right < barRight)
+        if(top > barTop)
         {
-            vec2 rightLineStart = new(right, Data.Y);
-            vec2 rightLineEnd = new(barRight, Data.Y);
+            vec2 rightLineStart = new(Data.X, top);
+            vec2 rightLineEnd = new(Data.X, barTop);
 
             // the upper one is the shadow
             Draw.Line(rightLineStart, rightLineEnd, Color.Gray * Setting.BarColor.alpha, Setting.BarThickness);
@@ -281,8 +286,11 @@ public class ProgressBar : BaseEntity
         // draw title
         if (getTitle)
         {
+            float titlePosY = Setting.TitleOnBottom ?
+                cons.ScreenHeight / 2f + Setting.SizeY / 2f + size.Y / 2f + Setting.GapSize.Y :
+                cons.ScreenHeight / 2f - Setting.SizeY / 2f - size.Y / 2f  - Setting.GapSize.Y;
             ActiveFont.DrawOutline(title, 
-                new vec2(cons.ScreenWidth / 2f, Data.Y - size.Y / 2f - Setting.GapSize.Y) - shift, 
+                new vec2(Data.X, titlePosY), 
                 vec2.One * 0.5f, Setting.TitleScale, Setting.TitleColor.Parsed(), 4f, Color.Black);
         }
     }

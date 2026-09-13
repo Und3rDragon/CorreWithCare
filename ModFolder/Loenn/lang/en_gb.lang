@@ -18,3 +18,4 @@ entities.CorreWithCare/CollectibleCoinMarker.placements.name.marker=Collectible 
 
 triggers.CorreWithCare/ProgressBarToggle.placements.name.normal=Progress Bar Toggle
 entities.CorreWithCare/ProgressBarDefiner.placements.name.marker=Progress Bar Definer
+entities.CorreWithCare/VerticalProgressBarDefiner.placements.name.marker=Progress Bar Definer (Vertical)

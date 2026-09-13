@@ -102,6 +102,15 @@ public static class NumberUtils
         return from + (to - from) * t;
     }
 
+    public static float GetLerp<T>(this T value, T v1, T v2) where T : INumber<T>
+    {
+        if(v1 == v2) { return 1f; }
+
+        float v = float.CreateChecked(value - v1) / float.CreateChecked(v2 - v1);
+
+        return v > 1f ? 1f : (v < 0f ? 0f : v);
+    }
+
     /// <summary>逼近目标值（不超过最大增量）</summary>
     public static T Approach<T>(this T value, T target, T maxDelta) where T : INumber<T>
     {

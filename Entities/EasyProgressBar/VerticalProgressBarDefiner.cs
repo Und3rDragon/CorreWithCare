@@ -12,20 +12,20 @@ using static CorreWithCare.Core.ExtendedAttributes;
 namespace CorreWithCare.Entities.EasyProgressBar;
 
 [WorkInProgress]
-[CustomEntity("CorreWithCare/ProgressBarDefiner")]
-public class ProgressBarDefiner : BaseEntity
+[CustomEntity("CorreWithCare/VerticalProgressBarDefiner")]
+public class VerticalProgressBarDefiner : BaseEntity
 {
-    public ProgressBarDefiner(EntityData data, vec2 offset) : base(data, offset)
+    public VerticalProgressBarDefiner(EntityData data, vec2 offset) : base(data, offset)
     {
-        ProgressBarSettings setting = new()
+        VerticalProgressBarSettings setting = new()
         {
             Name = data.Attr("sessionName", "default"),
-            FromTop = data.Bool("fromTop", true),
+            FromLeft = data.Bool("fromLeft", true),
             MoveDuration = data.Float("moveDuration", 1f).Abs(),
-            TargetOffsetY = data.Float("targetOffsetY", cons.ScreenHeight * 0.1f),
+            TargetOffsetX = data.Float("targetOffsetX", 40),
             Border = (data.Float("sessionBorder1", 0),
                     data.Float("sessionBorder2", 100)),
-            SizeX = data.Float("sizeX", cons.ScreenWidth * 0.8f),
+            SizeY = data.Float("sizeY", cons.ScreenHeight * 0.8f),
             FontScale = data.Vector2("fontSizeX", "fontSizeY", vec2.One).Abs(),
             BarThickness = data.Float("barSize", 10f).ClampMin(1f),
             FontColor = data.GetCorreColor("fontColor", ccolor.White),
@@ -36,19 +36,20 @@ public class ProgressBarDefiner : BaseEntity
             IsCounter = data.Bool("isCounter", true),
             TitleScale = data.Vector2("titleScaleX", "titleScaleY", vec2.One),
             TitleColor = data.GetCorreColor("titleColor", ccolor.White),
-            Flag = data.Attr("flag")
+            Flag = data.Attr("flag"),
+            TitleOnBottom = data.Bool("titleOnBottom", true)
         };
 
-        int n = md.Session.ProgressBars.FindIndex(s =>
+        int n = md.Session.VerticalProgressBars.FindIndex(s =>
             s.Name == setting.Name &&
-            s is ProgressBarSettings);
+            s is VerticalProgressBarSettings);
         if (n == -1)
         {
-            CWCModule.Session.ProgressBars.Add(setting);
+            CWCModule.Session.VerticalProgressBars.Add(setting);
         }
         else
         {
-            CWCModule.Session.ProgressBars[n] = setting;
+            CWCModule.Session.VerticalProgressBars[n] = setting;
         }
     }
 }
