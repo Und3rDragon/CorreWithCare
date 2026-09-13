@@ -7,6 +7,9 @@ using static CorreWithCare.Core.ExtendedAttributes;
 
 namespace CorreWithCare.Entities.EasyProgressBar;
 
+/// <summary>
+/// 关卡加载时为会话中登记过的每个进度条创建一个显示实体。
+/// </summary>
 public static class ProgressBarHook
 {
     [Load]
@@ -26,11 +29,6 @@ public static class ProgressBarHook
         foreach (var i in md.Session.ProgressBars)
         {
             ProgressBar bar = new ProgressBar(i);
-            self.Add(bar);
-        }
-        foreach(var i in md.Session.VerticalProgressBars)
-        {
-            VerticalProgressBar bar = new VerticalProgressBar(i);
             self.Add(bar);
         }
     }

@@ -14,9 +14,6 @@ public class CWCSession : EverestModuleSession
     public List<ProgressBarSettings> ProgressBars = new();
     public List<ProgressBarData> ActiveProgressBars = new();
 
-    public List<VerticalProgressBarSettings> VerticalProgressBars = new();
-    public List<VerticalProgressBarData> ActiveVerticalProgressBars = new();
-
     #region session values
     public HashSet<string> flagsPerRoom = new();
     public HashSet<string> flagsPerDeath = new();

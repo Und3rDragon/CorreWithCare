@@ -1,5 +1,4 @@
 local drawableSprite = require("structs.drawable_sprite")
-local directory = require("mods").requireFromPlugin("utils.directory")
 
 local marker = {}
 
@@ -10,12 +9,12 @@ marker.placements = {
     data = {
         isCounter = true,
         sessionName = "default",
-        fromTop = true,
+        direction = 0,
         moveDuration = 1,
-        targetOffsetY = 108,
+        targetOffset = 108,
         sessionBorder1 = 0,
         sessionBorder2 = 100,
-        sizeX = 1536,
+        size = 1536,
         fontSizeX = 1,
         fontSizeY = 1,
         barSize = 10,
@@ -30,6 +29,7 @@ marker.placements = {
         titleScaleY = 1,
         titleColor = "ffffffff",
         flag = "",
+        titleOnBottom = true,
     }
 }
 
@@ -45,6 +45,17 @@ marker.fieldInformation = {
     titleColor = {
         fieldType = "color",
         useAlpha = true,
+    },
+    -- 0/1 为水平进度条（从上/下方进出），2/3 为垂直进度条（从左/右侧进出）
+    direction = {
+        fieldType = "integer",
+        options = {
+            ["From Top"] = 0,
+            ["From Bottom"] = 1,
+            ["From Left"] = 2,
+            ["From Right"] = 3,
+        },
+        editable = false,
     },
 }
 
