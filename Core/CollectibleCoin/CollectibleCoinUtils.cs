@@ -28,7 +28,7 @@ public static class CollectibleCoinUtils
     /// <summary>
     /// 金币实体未指定贴图时使用的默认贴图目录。
     /// </summary>
-    public const string DefaultCoinSprite = "CorreWithCare/entities/collectibleCoin/idle";
+    public const string DefaultCoinSprite = "CorreWithCare/CollectibleCoin/idle";
 
     /// <summary>
     /// 金币实体未指定音效时使用的默认收集音效。

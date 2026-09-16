@@ -19,3 +19,10 @@ entities.CorreWithCare/CollectibleCoinMarker.placements.name.marker=Collectible 
 triggers.CorreWithCare/ProgressBarToggle.placements.name.normal=Progress Bar Toggle
 entities.CorreWithCare/ProgressBarDefiner.placements.name.marker=Progress Bar Definer
 entities.CorreWithCare/VerticalProgressBarDefiner.placements.name.marker=Progress Bar Definer (Vertical)
+
+## Holdable Jump Through
+
+entities.CorreWithCare/HoldableJumpthruUp.placements.name.up=Holdable Jump Through (Up)
+entities.CorreWithCare/HoldableJumpthruDown.placements.name.down=Holdable Jump Through (Down)
+entities.CorreWithCare/HoldableJumpthruLeft.placements.name.left=Holdable Jump Through (Left)
+entities.CorreWithCare/HoldableJumpthruRight.placements.name.right=Holdable Jump Through (Right)

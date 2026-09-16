@@ -6,9 +6,9 @@ local coin = {}
 coin.name = "CorreWithCare/CollectibleCoin"
 coin.nodeLineRenderType = "line"
 coin.nodeLimits = { 0, 2 }
-coin.texture = "CorreWithCare/entities/collectibleCoin/idle00"
+coin.texture = "CorreWithCare/CollectibleCoin/idle00"
 
-local defaultSprite = "CorreWithCare/entities/collectibleCoin/idle"
+local defaultSprite = "CorreWithCare/CollectibleCoin/idle"
 local defaultSfx = "event:/gddcoin/key_get"
 
 coin.placements = {
