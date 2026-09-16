@@ -27,6 +27,8 @@ namespace CorreWithCare.Entities;
     "CorreWithCare/HoldableJumpthruLeft = LoadLeft",
     "CorreWithCare/HoldableJumpthruRight = LoadRight"
 )]
+[exa.Credits("Viv for Holdable Barrier Jumpthrough open-source code" +
+    "Maddie for sideways and upside-down jump through source code reference")]
 public class HoldableJumpthru : JumpThru
 {
     public static Entity LoadUp(Level level, LevelData levelData, vec2 offset, EntityData entityData)
