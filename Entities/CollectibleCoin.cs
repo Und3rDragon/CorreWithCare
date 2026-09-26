@@ -25,55 +25,67 @@ namespace CorreWithCare.Entities;
 [Tracked]
 [CustomEntity("CorreWithCare/CollectibleCoin")]
 [WorkInProgress]
-public class CollectibleCoin : Entity
+public class CollectibleCoin : BaseEntity
 {
     private readonly string coinTag;
     private readonly int value;
     private readonly string sfx;
-    private readonly bool persist;
-    private readonly vec2[] nodes;
-    private readonly EntityID entityID;
+    private EntityID entityID => SourceId;
 
     private bool collected;
     private Sprite sprite;
     private BloomPoint bloom;
 
-    public CollectibleCoin(EntityData data, vec2 offset, EntityID entityID)
-        : this(data.Position + offset, data.NodesWithPosition(offset), entityID,
-              data.Attr("tag", ""),
-              data.Int("value", 1),
-              data.Attr("sprite", CollectibleCoinUtils.DefaultCoinSprite),
-              data.Attr("sfx", CollectibleCoinUtils.DefaultCoinSfx),
-              data.Bool("persist", false))
+    private float collectOffsetY, collectOffsetDuration;
+    private bool shrinkX;
+
+    private int existence;
+    private struct Existence
     {
+        public const int Persistent = 0;
+        public const int Normal = 1;
+        public const int OncePerMap = 2;
     }
 
-    public CollectibleCoin(vec2 position, vec2[] nodes, EntityID entityID,
-        string tag, int value, string spriteName, string sfx, bool persist)
+    public CollectibleCoin(EntityData data, vec2 offset)
+        : base(data, offset)
     {
-        this.coinTag = tag ?? "";
-        this.value = value;
-        this.nodes = nodes;
-        this.entityID = entityID;
-        this.sfx = string.IsNullOrWhiteSpace(sfx) ? CollectibleCoinUtils.DefaultCoinSfx : sfx;
-        this.persist = persist;
-
-        Position = position;
-
-        if (string.IsNullOrWhiteSpace(this.coinTag))
-            Log.Warn($"[CollectibleCoin] 金币缺少标签，位置 {Position}，该金币将无法计入任何计数器");
+        this.coinTag = data.Attr("tag", "default");
+        this.value = data.Int("value", 1);
+        this.sfx = data.Attr("sfx", CollectibleCoinUtils.DefaultCoinSfx);
+        
+        this.collectOffsetY = data.Float("collectOffsetY", -12f);
+        this.collectOffsetDuration = data.Float("collectOffsetDuration", 1.25f);
+        this.shrinkX = data.Bool("shrinkX", true);
+        this.existence = data.Int("existence", Existence.Normal);
 
         Add(bloom = new BloomPoint(0.5f, 16f));
 
         Collider = new Hitbox(16f, 16f, -8f, -8f);
-        Add(sprite = new Sprite(GFX.Game, string.IsNullOrWhiteSpace(spriteName)
-            ? CollectibleCoinUtils.DefaultCoinSprite
-            : spriteName));
+
+        string spriteName = data.Attr("sprite", CollectibleCoinUtils.DefaultCoinSpriteXML);
+
+        sprite = GFX.SpriteBank.Create(spriteName);
+        Add(sprite);
+
         Add(new PlayerCollider(OnPlayer));
 
-        sprite.Add("idle", "", 0.1f, new Chooser<string>("idle", 1f), 0, 0, 1, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 11);
         sprite.Play("idle");
         sprite.CenterOrigin();
+    }
+
+    public override void Added(Scene scene)
+    {
+        base.Added(scene);
+
+        string levelSet = SceneAs<Level>().GetCurrentLevelSet();
+        if(md.SaveData.CollectedCoins.TryGetValue(levelSet, out var ids))
+        {
+            if (ids.Contains(SourceData.ID))
+            {
+                RemoveSelf();
+            }
+        }
     }
 
     public override void Update()
@@ -101,16 +113,24 @@ public class CollectibleCoin : Entity
         Audio.Play(sfx, Center);
 
         Level level = SceneAs<Level>();
-        if (!persist)
-            level.Session.DoNotLoad.Add(entityID);
+        if (existence == Existence.Normal)
+        { 
+            level.Session.DoNotLoad.Add(entityID); 
+        }
+        if (existence == Existence.OncePerMap)
+        {
+            string levelSet = SceneAs<Level>().GetCurrentLevelSet();
+            md.SaveData.CollectedCoins.Create(levelSet, new());
+            md.SaveData.CollectedCoins[levelSet].Add(SourceData.ID);
+        }
 
         CoinCounting.Collect(player, coinTag, value, Position);
 
         PlayCollectAnimation();
 
         // 节点数组含实体自身位置：nodes[0] 为放置点，nodes[1]、nodes[2] 才是两个回程节点
-        if (nodes is not null && nodes.Length >= 3)
-            player?.Add(new Coroutine(ReturnRoutine(player, nodes[2], nodes[1])));
+        if (Nodes is not null && Nodes.Length >= 3)
+            player?.Add(new Coroutine(ReturnRoutine(player, Nodes[2], Nodes[1])));
     }
 
     private static ien ReturnRoutine(Player player, vec2 to, vec2 from)
@@ -140,15 +160,15 @@ public class CollectibleCoin : Entity
                 Position + Calc.AngleToVector(angle, Calc.Random.NextFloat(6f)), angle);
         }
 
-        sprite.Rate = 4f;
+        sprite.Play("collect");
 
-        Tween tween = Tween.Create(Tween.TweenMode.Oneshot, Ease.SineOut, 1.25f, false);
+        Tween tween = Tween.Create(Tween.TweenMode.Oneshot, Ease.SineOut, collectOffsetDuration.ClampMin(Engine.DeltaTime / 2f), false);
         float startY = Y;
-        float targetY = Y - 12f;
+        float targetY = Y + collectOffsetY;
 
         tween.OnUpdate = t =>
         {
-            Y = Calc.LerpClamp(startY, targetY, t.Eased);
+            Y = t.Eased.Lerp(startY, targetY);
 
             const float bloomFadePoint = 0.2f;
             if (t.Eased >= bloomFadePoint)
@@ -157,11 +177,14 @@ public class CollectibleCoin : Entity
                 bloom.Alpha = Calc.LerpClamp(1f, 0.2f, eased);
             }
 
-            const float shrinkPoint = 0.95f;
-            if (t.Eased >= shrinkPoint)
+            if (shrinkX)
             {
-                float eased = (t.Eased - shrinkPoint) / (1f - shrinkPoint);
-                sprite.Scale.X = Calc.LerpClamp(1f, 0f, eased);
+                const float shrinkPoint = 0.95f;
+                if (t.Eased >= shrinkPoint)
+                {
+                    float eased = (t.Eased - shrinkPoint) / (1f - shrinkPoint);
+                    sprite.Scale.X = Calc.LerpClamp(1f, 0f, eased);
+                }
             }
         };
 
