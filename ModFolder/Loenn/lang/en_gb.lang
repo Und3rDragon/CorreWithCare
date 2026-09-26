@@ -7,3 +7,22 @@ entities.CorreWithCare/CustomCredits.placements.name.credits=Custom Credits
 ## Arbitrary Outline
 
 entities.CorreWithCare/ArbitraryOutline.placements.name.outline=Arbitrary Outline
+
+## Collectible Coin
+
+entities.CorreWithCare/CollectibleCoin.placements.name.coin=Collectible Coin
+entities.CorreWithCare/CollectibleCoin.placements.name.coin_with_return=Collectible Coin (With Return)
+entities.CorreWithCare/CollectibleCoinMarker.placements.name.marker=Collectible Coin Marker
+
+## Progress Bar
+
+triggers.CorreWithCare/ProgressBarToggle.placements.name.normal=Progress Bar Toggle
+entities.CorreWithCare/ProgressBarDefiner.placements.name.marker=Progress Bar Definer
+entities.CorreWithCare/VerticalProgressBarDefiner.placements.name.marker=Progress Bar Definer (Vertical)
+
+## Holdable Jump Through
+
+entities.CorreWithCare/HoldableJumpthruUp.placements.name.up=Holdable Jump Through (Up)
+entities.CorreWithCare/HoldableJumpthruDown.placements.name.down=Holdable Jump Through (Down)
+entities.CorreWithCare/HoldableJumpthruLeft.placements.name.left=Holdable Jump Through (Left)
+entities.CorreWithCare/HoldableJumpthruRight.placements.name.right=Holdable Jump Through (Right)

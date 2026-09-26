@@ -51,7 +51,7 @@ public class CWCModule : EverestModule
 
     public override void Load()
     {
-        Prt.Info("Corre is standing by");
+        Log.Info("Corre is standing by");
         Instance = this;
 
         LoadingManager.Load();

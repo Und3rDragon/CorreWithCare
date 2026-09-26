@@ -8,10 +8,10 @@ namespace CorreWithCare.Core;
 
 public class BaseSolid : Solid
 {
-    public BaseSolid(EntityData data, Vector2 offset)
+    public BaseSolid(EntityData data, vec2 offset)
         : base(data.Position + offset, data.Width, data.Height, true)
     {
         Nodes = data.NodesWithPosition(offset);
     }
-    public Vector2[] Nodes;
+    public vec2[] Nodes;
 }

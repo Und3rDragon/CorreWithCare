@@ -57,7 +57,7 @@ public class CustomCredits : BaseEntity
     
     public abstract class CreditNode
     {
-        public abstract void Render(Vector2 position, float alignment, float scale);
+        public abstract void Render(vec2 position, float alignment, float scale);
         public abstract float Height(float scale);
     }
     
@@ -67,14 +67,14 @@ public class CustomCredits : BaseEntity
         public Color Color;
         public float Scale;
         
-        public override void Render(Vector2 position, float alignment, float scale)
+        public override void Render(vec2 position, float alignment, float scale)
         {
             var finalScale = Scale * scale;
             ActiveFont.DrawEdgeOutline(
                 Text, 
                 position.Floor(), 
-                new Vector2(alignment, 0f), 
-                Vector2.One * finalScale, 
+                new vec2(alignment, 0f), 
+                vec2.One * finalScale, 
                 Color, 
                 4f, 
                 Color.DarkSlateBlue, 
@@ -95,14 +95,14 @@ public class CustomCredits : BaseEntity
         public Color Color;
         public float Scale;
         
-        public override void Render(Vector2 position, float alignment, float scale)
+        public override void Render(vec2 position, float alignment, float scale)
         {
             var finalScale = Scale * scale;
             ActiveFont.DrawEdgeOutline(
                 Text, 
                 position.Floor(), 
-                new Vector2(alignment, 0f), 
-                Vector2.One * finalScale, 
+                new vec2(alignment, 0f), 
+                vec2.One * finalScale, 
                 Color, 
                 4f, 
                 Color.DarkSlateBlue, 
@@ -123,14 +123,14 @@ public class CustomCredits : BaseEntity
         public Color Color;
         public float Scale;
         
-        public override void Render(Vector2 position, float alignment, float scale)
+        public override void Render(vec2 position, float alignment, float scale)
         {
             var finalScale = Scale * scale;
             ActiveFont.DrawEdgeOutline(
                 Text, 
                 position.Floor(), 
-                new Vector2(alignment, 0f), 
-                Vector2.One * finalScale, 
+                new vec2(alignment, 0f), 
+                vec2.One * finalScale, 
                 Color, 
                 4f, 
                 Color.DarkSlateBlue, 
@@ -149,7 +149,7 @@ public class CustomCredits : BaseEntity
     {
         public float Size;
         
-        public override void Render(Vector2 position, float alignment, float scale) { }
+        public override void Render(vec2 position, float alignment, float scale) { }
         public override float Height(float scale) => Size * scale;
     }
     
@@ -159,10 +159,10 @@ public class CustomCredits : BaseEntity
         public float Size;
         public float Rotation;
         
-        public override void Render(Vector2 position, float alignment, float scale)
+        public override void Render(vec2 position, float alignment, float scale)
         {
             if (Texture == null) return;
-            var pos = position + new Vector2(
+            var pos = position + new vec2(
                 (Texture.Width * 0.5f - alignment * Texture.Width) * scale,
                 Texture.Height * 0.5f * scale
             );
@@ -174,7 +174,7 @@ public class CustomCredits : BaseEntity
     
     // ==================== 构造函数 ====================
     
-    public CustomCredits(EntityData data, Vector2 offset) 
+    public CustomCredits(EntityData data, vec2 offset) 
         : base(data, offset)
     {
         // ===== 从 EntityData 读取所有参数 =====
@@ -365,7 +365,7 @@ public class CustomCredits : BaseEntity
         base.Render();
         
         float x = _xPosition * Engine.Width;
-        Vector2 position = new Vector2(x, Engine.Height - _scroll).Floor();
+        vec2 position = new vec2(x, Engine.Height - _scroll).Floor();
         
         foreach (var node in _nodes)
         {

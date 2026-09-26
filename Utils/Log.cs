@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace CorreWithCare.Utils;
 
-public static class Prt
+public static class Log
 {
-    public static void In(ConsoleColor color = ConsoleColor.White, 
+    public static void Output(ConsoleColor color = ConsoleColor.White, 
         LogLevel level = LogLevel.Info, 
         Func<object, string> objectParser = null, params object[] objs)
     {
@@ -29,26 +29,26 @@ public static class Prt
 
     public static void Info(params object[] objs)
     {
-        In(ConsoleColor.White, LogLevel.Info, null, objs);
+        Output(ConsoleColor.White, LogLevel.Info, null, objs);
     }
 
     public static void Warn(params object[] objs)
     {
-        In(ConsoleColor.Yellow, LogLevel.Warn, null, objs);
+        Output(ConsoleColor.Yellow, LogLevel.Warn, null, objs);
     }
 
     public static void Error(params object[] objs)
     {
-        In(ConsoleColor.Red, LogLevel.Error, null, objs);
+        Output(ConsoleColor.Red, LogLevel.Error, null, objs);
     }
 
     public static void Debug(params object[] objs)
     {
-        In(ConsoleColor.Cyan, LogLevel.Debug, null, objs);
+        Output(ConsoleColor.Cyan, LogLevel.Debug, null, objs);
     }
 
     public static void Verbose(params object[] objs)
     {
-        In(ConsoleColor.Magenta, LogLevel.Verbose, null, objs);
+        Output(ConsoleColor.Magenta, LogLevel.Verbose, null, objs);
     }
 }

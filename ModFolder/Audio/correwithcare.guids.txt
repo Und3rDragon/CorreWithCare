@@ -1,0 +1,4 @@
+{a89f3181-d383-478a-a1d2-99dd1eeb081f} event:/gddcoin/key_get
+{41ce6e06-6c0b-4446-b1bb-63f874f56cef} event:/momentum_refill/momentum_refill_return
+{b2ee8ec6-1f52-40e5-bde3-927c2d0ef981} event:/momentum_refill/momentum_refill_touch
+{afdf0f7f-37b6-4b99-8f19-8e4727f50f6a} bank:/saladimsfx

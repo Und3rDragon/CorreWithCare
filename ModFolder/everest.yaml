@@ -1,6 +1,6 @@
 - Name: CorreWithCare
-  Version: 1.0.0
+  Version: 1.1.0
   DLL: Code/CorreWithCare.dll
   Dependencies:
     - Name: Everest
-      Version: 1.6485.0
+      Version: 1.6580.0

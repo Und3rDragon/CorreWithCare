@@ -57,7 +57,7 @@ public static class DialogChoices
         {
             if (rawParams.Count < 1)
             {
-                Prt.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] 指令缺少参数！Expected: {{{DialogCommands.Prefix}_{ChoiceCmd} display [target]}}");
+                Log.Warn($"[{DialogCommands.Prefix}_{ChoiceCmd}] 指令缺少参数！Expected: {{{DialogCommands.Prefix}_{ChoiceCmd} display [target]}}");
                 return;
             }
 
@@ -80,7 +80,7 @@ public static class DialogChoices
         {
             if (rawParams.Count < 1)
             {
-                Prt.Warn($"[{DialogCommands.Prefix}_{JumpToCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpToCmd} target [restrictFlag]}}");
+                Log.Warn($"[{DialogCommands.Prefix}_{JumpToCmd}] 指令参数不足！Expected: {{{DialogCommands.Prefix}_{JumpToCmd} target [restrictFlag]}}");
                 return;
             }
 
@@ -194,7 +194,7 @@ public static class DialogChoices
     /// <summary>把对话中的 choice 节点在播放到对应位置时累积为选项。</summary>
 
     private static void AddChoiceEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
-        Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
+        Textbox self, string dialog, Language language, Func<ien>[] events)
     {
         orig(self, dialog, language, events);
 
@@ -212,10 +212,10 @@ public static class DialogChoices
             return;
 
         // 读取当前 events（可能已被其他钩子更新），在其基础上追加 choice 事件
-        var currentEvents = selfData.Get<Func<IEnumerator>[]>("events") ?? events ?? new Func<IEnumerator>[0];
+        var currentEvents = selfData.Get<Func<ien>[]>("events") ?? events ?? new Func<ien>[0];
         int baseCount = currentEvents.Length;
 
-        var choiceEvents = new List<Func<IEnumerator>>();
+        var choiceEvents = new List<Func<ien>>();
         for (int i = 0; i < choiceNodes.Count; i++)
         {
             var ch = choiceNodes[i];
@@ -225,7 +225,7 @@ public static class DialogChoices
             choiceEvents.Add(() => AccumulateChoiceCoroutine(copy));
         }
 
-        var newEvents = new Func<IEnumerator>[currentEvents.Length + choiceEvents.Count];
+        var newEvents = new Func<ien>[currentEvents.Length + choiceEvents.Count];
         Array.Copy(currentEvents, newEvents, currentEvents.Length);
         for (int i = 0; i < choiceEvents.Count; i++)
             newEvents[currentEvents.Length + i] = choiceEvents[i];
@@ -234,7 +234,7 @@ public static class DialogChoices
     }
 
     /// <summary>播放到 choice 位置时累积该选项到全局池（去重）。</summary>
-    private static IEnumerator AccumulateChoiceCoroutine(CorreChoiceNode choice)
+    private static ien AccumulateChoiceCoroutine(CorreChoiceNode choice)
     {
         AccumulateChoice(choice);
         yield break;
@@ -270,7 +270,7 @@ public static class DialogChoices
     // ==================== 跳转：jumpto events ====================
     /// <summary>把对话中的 jumpto 节点在播放到对应位置时标记待跳转。</summary>
     private static void AddJumpToEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
-        Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
+        Textbox self, string dialog, Language language, Func<ien>[] events)
     {
         orig(self, dialog, language, events);
 
@@ -287,10 +287,10 @@ public static class DialogChoices
         if (jumpNodes.Count == 0)
             return;
 
-        var currentEvents = selfData.Get<Func<IEnumerator>[]>("events") ?? events ?? new Func<IEnumerator>[0];
+        var currentEvents = selfData.Get<Func<ien>[]>("events") ?? events ?? new Func<ien>[0];
         int baseCount = currentEvents.Length;
 
-        var jumpEvents = new List<Func<IEnumerator>>();
+        var jumpEvents = new List<Func<ien>>();
         for (int i = 0; i < jumpNodes.Count; i++)
         {
             var jump = jumpNodes[i];
@@ -299,7 +299,7 @@ public static class DialogChoices
             jumpEvents.Add(() => JumpToCoroutine(copy));
         }
 
-        var newEvents = new Func<IEnumerator>[currentEvents.Length + jumpEvents.Count];
+        var newEvents = new Func<ien>[currentEvents.Length + jumpEvents.Count];
         Array.Copy(currentEvents, newEvents, currentEvents.Length);
         for (int i = 0; i < jumpEvents.Count; i++)
             newEvents[currentEvents.Length + i] = jumpEvents[i];
@@ -307,7 +307,7 @@ public static class DialogChoices
         selfData.Set("events", newEvents);
     }
     /// <summary>播放到 jumpto 时标记待跳转（检测可选 flag 后），由过场结束钩子无缝衔接。</summary>
-    private static IEnumerator JumpToCoroutine(CorreJumpToNode jump)
+    private static ien JumpToCoroutine(CorreJumpToNode jump)
     {
 
         // 有 restrictFlag：仅当 flag 为 true 才跳转
@@ -325,7 +325,7 @@ public static class DialogChoices
 
         PendingTarget = jump.Target;
 
-        // 关键：调用 Textbox.Close()（设 Opened=false），让 Textbox.Say 的 IEnumerator 返回，
+        // 关键：调用 Textbox.Close()（设 Opened=false），让 Textbox.Say 的 ien 返回，
         // 从而旧 Cutscene 协程走完 yield Textbox.Say → 走到 EndCutscene → IL 钩子无缝衔接。
         // 不能用 RemoveSelf()（Opened 仍为 true，Textbox.Say 永不返回 → 卡死）。
         if (Engine.Scene != null)
@@ -343,7 +343,7 @@ public static class DialogChoices
     }
 
     /// <summary>弹选项并等待玩家选择：选 target 无缝衔接新过场，选无 target 直接结束过场。</summary>
-    private static IEnumerator DisplayChoicesRoutine(Level level, List<CorreChoiceNode> choices)
+    private static ien DisplayChoicesRoutine(Level level, List<CorreChoiceNode> choices)
     {
         var contents = new string[choices.Count];
         for (int i = 0; i < choices.Count; i++)
@@ -419,7 +419,7 @@ public class ChoicePrompt : BaseEntity
     /// <summary>玩家最终选择的索引（Prompt 返回后有效）。</summary>
     public static int Choice;
 
-    private Vector2 renderOffset = new Vector2(260f, 120f);
+    private vec2 renderOffset = new vec2(260f, 120f);
     private int textboxScreenLimit;
     private int scroll;
 
@@ -427,7 +427,7 @@ public class ChoicePrompt : BaseEntity
     /// 弹出选项并等待玩家确认。
     /// options 是选项显示文本的 Dialog ID（FancyText，支持头像 [madeline happy] 等）。
     /// </summary>
-    public static IEnumerator Prompt(params string[] options)
+    public static ien Prompt(params string[] options)
     {
         var obj = new ChoicePrompt();
         Engine.Scene.Add(obj);
@@ -463,7 +463,7 @@ public class ChoicePrompt : BaseEntity
         this.options.Add(option);
         Engine.Scene.Add(option);
 
-        option.Position = new Vector2(260f, 120f + 160f * idx);
+        option.Position = new vec2(260f, 120f + 160f * idx);
         option.Ease = 0f;
     }
 
@@ -476,9 +476,9 @@ public class ChoicePrompt : BaseEntity
         }
     }
 
-    public static Vector2 textboxPosition(int index, int scroll)
+    public static vec2 textboxPosition(int index, int scroll)
     {
-        return new Vector2(0f, 160f * index - 160f * scroll);
+        return new vec2(0f, 160f * index - 160f * scroll);
     }
 
     public override void Render()
@@ -628,7 +628,7 @@ public class Option : BaseEntity
         }
     }
 
-    public void Render(Vector2 position)
+    public void Render(vec2 position)
     {
         if (this.Scene is Level level && level.Paused)
         {
@@ -646,7 +646,7 @@ public class Option : BaseEntity
 
         if (this.Textbox != null)
         {
-            GFX.Portraits[this.Textbox]?.Draw(position, Vector2.Zero, color1);
+            GFX.Portraits[this.Textbox]?.Draw(position, vec2.Zero, color1);
         }
 
         Facings facings = this.PortraitSide;
@@ -659,15 +659,15 @@ public class Option : BaseEntity
 
         if (this.Portrait != null)
         {
-            this.Portrait.Scale = Vector2.One * (num2 / this.PortraitSize);
+            this.Portrait.Scale = vec2.One * (num2 / this.PortraitSize);
             if (facings == Facings.Right)
             {
-                this.Portrait.Position = position + new Vector2(1380f - num2 * 0.5f, 70f);
+                this.Portrait.Position = position + new vec2(1380f - num2 * 0.5f, 70f);
                 this.Portrait.Scale.X *= -1f;
             }
             else
             {
-                this.Portrait.Position = position + new Vector2(20f + num2 * 0.5f, 70f);
+                this.Portrait.Position = position + new vec2(20f + num2 * 0.5f, 70f);
             }
 
             this.Portrait.Color = Color.White * (0.5f + highlightEase * 0.5f) * introEase;
@@ -675,8 +675,8 @@ public class Option : BaseEntity
         }
 
         float num3 = (140f - ActiveFont.LineHeight * 0.7f) / 2f;
-        Vector2 position1 = new Vector2(0f, position.Y + 70f);
-        Vector2 justify = new Vector2(0f, 0.5f);
+        vec2 position1 = new vec2(0f, position.Y + 70f);
+        vec2 justify = new vec2(0f, 0.5f);
         if (facings == Facings.Right)
         {
             justify.X = 1f;
@@ -687,6 +687,6 @@ public class Option : BaseEntity
             position1.X = position.X + 20f + num3 + num2;
         }
 
-        this.Text.Draw(position1, justify, Vector2.One * 0.7f, alpha);
+        this.Text.Draw(position1, justify, vec2.One * 0.7f, alpha);
     }
 }

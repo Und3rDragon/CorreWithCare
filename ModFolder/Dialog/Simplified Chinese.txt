@@ -1,0 +1,3 @@
+modoptions_CorreWithCare_CorreCoinMaxSlots=金币数量显示最大槽位数量
+modoptions_CorreWithCare_CorreCoinDisplayerY=金币数量显示起始Y坐标
+modoptions_CorreWithCare_CorreCoinRowHeight=金币数量显示行距

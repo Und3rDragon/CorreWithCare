@@ -35,9 +35,9 @@ public static class DialogCommands
 
     /// <summary>
     /// 指令注册表：指令名（小写，不含前缀）→ 效果协程工厂。
-    /// 工厂签名 (Player, Level, List&lt;string&gt; 参数) → IEnumerator。
+    /// 工厂签名 (Player, Level, List&lt;string&gt; 参数) → ien。
     /// </summary>
-    public static readonly Dictionary<string, Func<Player, Level, List<string>, IEnumerator>> Triggers = new();
+    public static readonly Dictionary<string, Func<Player, Level, List<string>, ien>> Triggers = new();
 
     /// <summary>
     /// 外部模块的指令解析回调：(指令名, 参数, 节点列表) → 是否已处理。
@@ -63,7 +63,7 @@ public static class DialogCommands
 
             if (rawParams.Count == 0)
             {
-                Prt.Warn($"Found empty {Prefix} trigger!");
+                Log.Warn($"Found empty {Prefix} trigger!");
             }
             else
             {
@@ -83,7 +83,7 @@ public static class DialogCommands
         {
             if (rawParams.Count == 0)
             {
-                Prt.Warn("CorreWithCare", $"Found empty {Prefix}_{OnSkip}!");
+                Log.Warn("CorreWithCare", $"Found empty {Prefix}_{OnSkip}!");
             }
             else
             {
@@ -166,7 +166,7 @@ public static class DialogCommands
 
     /// <summary>Textbox 构造时把 CorreTrigger 节点转换为 events 协程，对话到点自动触发。</summary>
     private static void AddCorreEvents(On.Celeste.Textbox.orig_ctor_string_Language_Func1Array orig,
-        Textbox self, string dialog, Language language, Func<IEnumerator>[] events)
+        Textbox self, string dialog, Language language, Func<ien>[] events)
     {
         orig(self, dialog, language, events);
 
@@ -174,10 +174,10 @@ public static class DialogCommands
         var text = selfData.Get<FancyText.Text>("text");
 
         // 读取当前 events（可能已被其他钩子更新），在其基础上追加
-        var currentEvents = selfData.Get<Func<IEnumerator>[]>("events") ?? events ?? new Func<IEnumerator>[0];
+        var currentEvents = selfData.Get<Func<ien>[]>("events") ?? events ?? new Func<ien>[0];
         int baseCount = currentEvents.Length;
 
-        var correEvents = new List<Func<IEnumerator>>();
+        var correEvents = new List<Func<ien>>();
 
         foreach (var node in text.Nodes)
         {
@@ -196,7 +196,7 @@ public static class DialogCommands
         if (correEvents.Count == 0)
             return;
 
-        var newEvents = new Func<IEnumerator>[currentEvents.Length + correEvents.Count];
+        var newEvents = new Func<ien>[currentEvents.Length + correEvents.Count];
         Array.Copy(currentEvents, newEvents, currentEvents.Length);
         for (int i = 0; i < correEvents.Count; i++)
             newEvents[currentEvents.Length + i] = correEvents[i];
@@ -230,13 +230,13 @@ public static class DialogCommands
     // ==================== 注册 ====================
 
     /// <summary>注册一个指令效果（无 mod 前缀）。指令名不含 corre_ 前缀。</summary>
-    public static void Register(string triggerName, Func<Player, Level, List<string>, IEnumerator> effect)
+    public static void Register(string triggerName, Func<Player, Level, List<string>, ien> effect)
     {
         Register(null, triggerName, effect);
     }
 
     /// <summary>注册一个指令效果，支持 "modname:triggername" 前缀区分。</summary>
-    public static void Register(string modName, string triggerName, Func<Player, Level, List<string>, IEnumerator> effect)
+    public static void Register(string modName, string triggerName, Func<Player, Level, List<string>, ien> effect)
     {
         if (!string.IsNullOrWhiteSpace(modName))
             Triggers[modName.Trim().ToLower() + ":" + triggerName.Trim().ToLower()] = effect;
@@ -245,9 +245,9 @@ public static class DialogCommands
     }
 
     /// <summary>按指令 ID 查找效果；找不到返回空协程。</summary>
-    public static Func<IEnumerator> Get(string id, Player player, Level level, List<string> p)
+    public static Func<ien> Get(string id, Player player, Level level, List<string> p)
     {
-        static IEnumerator nothing()
+        static ien nothing()
         {
             yield return null;
         }
@@ -276,13 +276,13 @@ public static class DialogCommands
         return bool.TryParse(strings[index], out bool b) ? b : def;
     }
 
-    public static Vector2? GetVectorParam(List<string> strings, int index, Vector2? def = null)
+    public static vec2? GetVectorParam(List<string> strings, int index, vec2? def = null)
     {
         if (strings.Count > index)
         {
             string[] parts = strings[index].Split(',');
             if (parts.Length == 2 && float.TryParse(parts[0], out float x) && float.TryParse(parts[1], out float y))
-                return new Vector2(x, y);
+                return new vec2(x, y);
         }
 
         return def;
@@ -291,7 +291,7 @@ public static class DialogCommands
     // ==================== 辅助 ====================
 
     /// <summary>把协程包到一个临时实体上运行，实现并发（不阻塞对话）。</summary>
-    public static IEnumerator WrapCoroutine(IEnumerator routine)
+    public static ien WrapCoroutine(ien routine)
     {
         Entity entity = new();
         entity.Add(new Coroutine(routine));
