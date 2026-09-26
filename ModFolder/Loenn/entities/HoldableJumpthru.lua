@@ -2,7 +2,7 @@ local drawableSprite = require("structs.drawable_sprite")
 local utils = require("utils")
 local directory = require("mods").requireFromPlugin("utils.directory")
 
-local defaultTexture = "CorreWithCare/HoldableBarrierJumpthru/"
+local defaultTexture = "CorreWithCare/HoldableJumpthru/"
 
 -- 内外层默认染色
 local defaultInnerColor = "ffffff99"

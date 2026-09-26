@@ -75,7 +75,7 @@ public class HoldableJumpthru : JumpThru
     {
         this.direction = direction;
 
-        texture = data.Attr("texture", "CorreWithCare/HoldableBarrierJumpthru/");
+        texture = data.Attr("texture", "CorreWithCare/HoldableJumpthru/");
 
         innerColor = data.GetCorreColor("innerColor", new ccolor("ffffff99"));
         outerColor = data.GetCorreColor("outerColor", new ccolor("ffffffff"));
@@ -174,7 +174,7 @@ public class HoldableJumpthru : JumpThru
         // 图集配置了兜底贴图时，检索不到会返回兜底而非空列表，因此额外校验名称
         if (!IsValidVariants(innerVariants, "inner") || !IsValidVariants(outerVariants, "outer"))
         {
-            Log.Warn($"[HoldableBarrierJumpthru] 贴图缺失，位置 {Position}，路径 {texture}");
+            Log.Warn($"[HoldableJumpthru] 贴图缺失，位置 {Position}，路径 {texture}");
             return;
         }
 
