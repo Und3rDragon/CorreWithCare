@@ -43,7 +43,7 @@ public class CollectibleCoinMarker : BaseEntity
 
         if (string.IsNullOrWhiteSpace(coinTag))
         {
-            Log.Warn($"[CollectibleCoinMarker] 图标定义缺少标签，位置 {Position}");
+            Log.Warn($"[CollectibleCoinMarker] Missing Collectible Coin UI for coin at {Position}");
             return;
         }
 
