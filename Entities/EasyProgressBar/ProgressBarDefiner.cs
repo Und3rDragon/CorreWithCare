@@ -35,14 +35,14 @@ public class ProgressBarDefiner : BaseEntity
             Size = data.Float("size", vertical ? cons.ScreenHeight * 0.8f : cons.ScreenWidth * 0.8f),
             FontScale = data.Vector2("fontSizeX", "fontSizeY", vec2.One).Abs(),
             BarThickness = data.Float("barSize", 10f).ClampMin(1f),
-            FontColor = data.GetCorreColor("fontColor", ccolor.White),
-            BarColor = data.GetCorreColor("barColor", ccolor.White),
+            FontColor = data.PackColor("fontColor", ccolor.White),
+            BarColor = data.PackColor("barColor", ccolor.White),
             GapSize = data.Vector2("gapX", "gapY", vec2.One * 10f).Abs(),
             ShadowShift = data.Vector2("shadowShiftX", "shadowShiftY", vec2.UnitY * 8f),
             TitleName = data.Attr("titleName"),
             IsCounter = data.Bool("isCounter", true),
             TitleScale = data.Vector2("titleScaleX", "titleScaleY", vec2.One),
-            TitleColor = data.GetCorreColor("titleColor", ccolor.White),
+            TitleColor = data.PackColor("titleColor", ccolor.White),
             Flag = data.Attr("flag"),
             TitleOnBottom = data.Bool("titleOnBottom", true)
         };

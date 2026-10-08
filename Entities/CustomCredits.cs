@@ -191,11 +191,11 @@ public class CustomCredits : BaseEntity
         _allowInput = data.Bool("allowInput", true);
         
         // 颜色
-        _headingColor = data.GetCorreColor("headingColor", Color.White);
-        _subtitleColor = data.GetCorreColor("subtitleColor", Color.Gray);
-        _textColor = data.GetCorreColor("textColor", Color.White);
-        _outlineColor = data.GetCorreColor("outlineColor", Color.Black);
-        _edgeColor = data.GetCorreColor("edgeColor", Color.DarkSlateBlue);
+        _headingColor = data.PackColor("headingColor", Color.White);
+        _subtitleColor = data.PackColor("subtitleColor", Color.Gray);
+        _textColor = data.PackColor("textColor", Color.White);
+        _outlineColor = data.PackColor("outlineColor", Color.Black);
+        _edgeColor = data.PackColor("edgeColor", Color.DarkSlateBlue);
         
         // 字体缩放
         _headingScale = data.Float("headingScale", 2.5f);
