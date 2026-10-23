@@ -30,3 +30,10 @@ entities.CorreWithCare/HoldableJumpthruRight.placements.name.right=Holdable Jump
 ## Auto Decaler
 
 entities.CorreWithCare/AutoDecaler.placements.name.autoDecaler=Auto Decaler
+
+## Lightning Renderer Controller
+
+entities.CorreWithCare/LightningRendererController.placements.name.map=Lightning Renderer Controller (Whole Map)
+entities.CorreWithCare/LightningRendererController.placements.name.room=Lightning Renderer Controller (Per Room)
+entities.CorreWithCare/LightningRendererController.placements.name.place=Lightning Renderer Controller (Pinned)
+entities.CorreWithCare/LightningRendererController.placements.name.ids=Lightning Renderer Controller (Target IDs)
