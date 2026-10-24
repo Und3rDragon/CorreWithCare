@@ -77,8 +77,8 @@ public class HoldableJumpthru : JumpThru
 
         texture = data.Attr("texture", "CorreWithCare/HoldableJumpthru/");
 
-        innerColor = data.GetCorreColor("innerColor", new ccolor("ffffff99"));
-        outerColor = data.GetCorreColor("outerColor", new ccolor("ffffffff"));
+        innerColor = data.PackColor("innerColor", new ccolor("ffffff99"));
+        outerColor = data.PackColor("outerColor", new ccolor("ffffffff"));
 
         Length = direction.IsHorizontal() ? data.Width : data.Height;
 

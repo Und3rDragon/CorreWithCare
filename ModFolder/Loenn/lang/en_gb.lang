@@ -26,3 +26,14 @@ entities.CorreWithCare/HoldableJumpthruUp.placements.name.up=Holdable Jump Throu
 entities.CorreWithCare/HoldableJumpthruDown.placements.name.down=Holdable Jump Through (Down)
 entities.CorreWithCare/HoldableJumpthruLeft.placements.name.left=Holdable Jump Through (Left)
 entities.CorreWithCare/HoldableJumpthruRight.placements.name.right=Holdable Jump Through (Right)
+
+## Auto Decaler
+
+entities.CorreWithCare/AutoDecaler.placements.name.autoDecaler=Auto Decaler
+
+## Lightning Renderer Controller
+
+entities.CorreWithCare/LightningRendererController.placements.name.map=Lightning Renderer Controller (Whole Map)
+entities.CorreWithCare/LightningRendererController.placements.name.room=Lightning Renderer Controller (Per Room)
+entities.CorreWithCare/LightningRendererController.placements.name.place=Lightning Renderer Controller (Pinned)
+entities.CorreWithCare/LightningRendererController.placements.name.ids=Lightning Renderer Controller (Target IDs)

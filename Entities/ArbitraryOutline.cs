@@ -24,8 +24,8 @@ public class ArbitraryOutline : BaseEntity
     public ArbitraryOutline(EntityData data, vec2 offset) : base(data, offset)
     {
         Nodes = data.NodesOffset(offset);
-        color = data.GetCorreColor("color", Color.White);
-        outlineColor = data.GetCorreColor("outlineColor", Color.White);
+        color = data.PackColor("color", Color.White);
+        outlineColor = data.PackColor("outlineColor", Color.White);
         outlineWidth = data.Float("outlineWidth", 2f);
         Depth = data.Int("depth");
 

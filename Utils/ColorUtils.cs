@@ -334,28 +334,28 @@ public static class ColorUtils
         }
     }
 
-    public static CorreColor GetCorreColor(this Color color, float alpha = 1f)
+    public static CorreColor PackColor(this Color color, float alpha = 1f)
     {
         return new CorreColor(color, alpha);
     }
 
-    public static CorreColor GetCorreColor(this string hex)
+    public static CorreColor PackColor(this string hex)
     {
         return new CorreColor(hex);
     }
     
-    public static CorreColor GetCorreColor(this EntityData data, string colorAttributeName, string defaultColor = "ffffff")
+    public static CorreColor PackColor(this EntityData data, string colorAttributeName, string defaultColor = "ffffff")
     {
         return new CorreColor(data.Attr(colorAttributeName, defaultColor));
     }
 
-    public static CorreColor GetCorreColor(this EntityData data, string colorAttributeName, Color defaultColor)
+    public static CorreColor PackColor(this EntityData data, string colorAttributeName, Color defaultColor)
     {
-        return data.GetCorreColor(colorAttributeName, defaultColor.RGBAToHex());
+        return data.PackColor(colorAttributeName, defaultColor.RGBAToHex());
     }
     
-    public static CorreColor GetCorreColor(this EntityData data, string colorAttributeName, CorreColor defaultColor)
+    public static CorreColor PackColor(this EntityData data, string colorAttributeName, CorreColor defaultColor)
     {
-        return data.GetCorreColor(colorAttributeName, defaultColor.Parsed());
+        return data.PackColor(colorAttributeName, defaultColor.Parsed());
     }
 }
