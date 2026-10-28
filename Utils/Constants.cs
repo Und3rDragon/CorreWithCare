@@ -6,6 +6,7 @@ global using cons = CorreWithCare.Utils.Constants;
 global using ccolor = CorreWithCare.Utils.ColorUtils.CorreColor;
 global using vec2 = Microsoft.Xna.Framework.Vector2;
 global using ien = System.Collections.IEnumerator;
+global using ldm = CorreWithCare.Core.LoadingManager;
 
 namespace CorreWithCare.Utils;
 

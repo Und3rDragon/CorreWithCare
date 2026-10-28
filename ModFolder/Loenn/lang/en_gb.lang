@@ -37,3 +37,38 @@ entities.CorreWithCare/LightningRendererController.placements.name.map=Lightning
 entities.CorreWithCare/LightningRendererController.placements.name.room=Lightning Renderer Controller (Per Room)
 entities.CorreWithCare/LightningRendererController.placements.name.place=Lightning Renderer Controller (Pinned)
 entities.CorreWithCare/LightningRendererController.placements.name.ids=Lightning Renderer Controller (Target IDs)
+
+## Gossip NPC
+
+entities.CorreWithCare/GossipNPC.placements.name.npc=Gossip NPC
+
+entities.CorreWithCare/GossipNPC.attributes.name.spriteName=Sprite
+entities.CorreWithCare/GossipNPC.attributes.description.spriteName=SpriteBank ID of this NPC's look. Append "/" and an animation name to also play that animation, e.g. "theo/idle".
+entities.CorreWithCare/GossipNPC.attributes.name.mainDialogIds=Main Dialogs
+entities.CorreWithCare/GossipNPC.attributes.description.mainDialogIds=Comma-separated dialog IDs. One is played per conversation, in order; the progress is kept for the session.
+entities.CorreWithCare/GossipNPC.attributes.name.gossipDialogIds=Gossip Dialogs
+entities.CorreWithCare/GossipNPC.attributes.description.gossipDialogIds=Comma-separated dialog IDs. Once every main dialog has been played, a random one is picked each conversation. With no main dialogs, these are played from the first talk.
+entities.CorreWithCare/GossipNPC.attributes.name.endLevel=End Level
+entities.CorreWithCare/GossipNPC.attributes.description.endLevel=Complete the level right after the last main dialog, without playing gossip dialogs. Has no effect when only gossip dialogs are set.
+entities.CorreWithCare/GossipNPC.attributes.name.flipX=Flip Horizontally
+entities.CorreWithCare/GossipNPC.attributes.description.flipX=Mirror the NPC horizontally.
+entities.CorreWithCare/GossipNPC.attributes.name.flipY=Flip Vertically
+entities.CorreWithCare/GossipNPC.attributes.description.flipY=Mirror the NPC vertically.
+entities.CorreWithCare/GossipNPC.attributes.name.approachWhenTalking=Approach When Talking
+entities.CorreWithCare/GossipNPC.attributes.description.approachWhenTalking=Make the player walk over to this NPC (and turn to face it) before the dialog starts.
+entities.CorreWithCare/GossipNPC.attributes.name.approachDistance=Approach Distance
+entities.CorreWithCare/GossipNPC.attributes.description.approachDistance=Distance in pixels the player walks when "Approach When Talking" is enabled.
+entities.CorreWithCare/GossipNPC.attributes.name.indicatorOffsetX=Indicator Offset X
+entities.CorreWithCare/GossipNPC.attributes.description.indicatorOffsetX=Horizontal offset of the interaction icon.
+entities.CorreWithCare/GossipNPC.attributes.name.indicatorOffsetY=Indicator Offset Y
+entities.CorreWithCare/GossipNPC.attributes.description.indicatorOffsetY=Vertical offset of the interaction icon.
+entities.CorreWithCare/GossipNPC.attributes.name.onlyIfFlag=Only If Flag
+entities.CorreWithCare/GossipNPC.attributes.description.onlyIfFlag=Session flag that must be set for this NPC to be talkable. Empty means always talkable.
+entities.CorreWithCare/GossipNPC.attributes.name.onlyIfFlagInverted=Only If Flag Inverted
+entities.CorreWithCare/GossipNPC.attributes.description.onlyIfFlagInverted=Invert the "Only If Flag" check.
+entities.CorreWithCare/GossipNPC.attributes.name.setFlag=Set Flag
+entities.CorreWithCare/GossipNPC.attributes.description.setFlag=Session flag set once every main dialog has been played. Empty means no flag is set.
+entities.CorreWithCare/GossipNPC.attributes.name.setFlagInverted=Set Flag Inverted
+entities.CorreWithCare/GossipNPC.attributes.description.setFlagInverted=Set the "Set Flag" to false instead of true.
+entities.CorreWithCare/GossipNPC.attributes.name.customFont=Custom Font
+entities.CorreWithCare/GossipNPC.attributes.description.customFont=Font name used to render this NPC's dialog. Empty uses the default font.
