@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using CorreWithCare.Utils;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -9,14 +10,36 @@ namespace CorreWithCare.Features;
 
 /// <summary>
 /// 地图图标尺寸：读取地图 meta 的 UnlockIconSize，为 true 时章节选择界面的图标保持贴图原始尺寸。
-/// 没有声明该字段的地图仍然按原版规则缩放图标宽度。
+/// 图标收起时回到原版缩放尺寸，避免大图标随上移仍留在画面内。
+/// 没有声明该字段的地图仍然完全按原版规则处理。
 /// </summary>
 public static class MapIconScaleHooks
 {
     /// <summary>
+    /// 图标的收起状态与展开尺寸之间的过渡时长。
+    /// </summary>
+    private const float CollapseDuration = 0.25f;
+
+    /// <summary>
     /// 各地图是否解锁图标尺寸的缓存，避免每帧重新读取 meta。
     /// </summary>
     private static readonly Dictionary<int, bool> UnlockIconSizeCache = new();
+
+    /// <summary>
+    /// 各地图图标的收起进度，键随图标实体一起回收。
+    /// </summary>
+    private static readonly ConditionalWeakTable<OuiChapterSelectIcon, IconSizeState> IconStates = new();
+
+    /// <summary>
+    /// 单个图标的收起进度。
+    /// </summary>
+    private sealed class IconSizeState
+    {
+        /// <summary>
+        /// 0 表示完全展开，1 表示完全收起。
+        /// </summary>
+        public float Progress;
+    }
 
     [Load]
     public static void Load()
@@ -51,14 +74,23 @@ public static class MapIconScaleHooks
     }
 
     /// <summary>
-    /// 按地图设置给出图标宽度倍率。
+    /// 按地图设置与收起进度给出图标宽度倍率。
     /// </summary>
-    private static float GetIconScale(float scaleFactor, OuiChapterSelectIcon icon)
+    private static float GetIconScale(float vanillaFactor, OuiChapterSelectIcon icon)
     {
-        if (icon != null && ShouldUnlockIconSize(icon.Area))
+        if (icon == null || !ShouldUnlockIconSize(icon.Area))
+            return vanillaFactor;
+
+        IconSizeState state = IconStates.GetOrCreateValue(icon);
+        state.Progress = Calc.Approach(state.Progress, icon.IsHidden ? 1f : 0f, Engine.DeltaTime / CollapseDuration);
+
+        if (state.Progress <= 0f)
             return 1f;
 
-        return scaleFactor;
+        if (state.Progress >= 1f)
+            return vanillaFactor;
+
+        return 1f + (vanillaFactor - 1f) * Ease.SineInOut(state.Progress);
     }
 
     /// <summary>
